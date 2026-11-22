@@ -1,8 +1,6 @@
 package app
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"hunrx.com/attendance_management/pkg/config"
 	"hunrx.com/attendance_management/pkg/httpx"
