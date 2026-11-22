@@ -1,0 +1,29 @@
+<form (submit)="login()" [formGroup]="form" class="login-card">
+  <h2>Sign in</h2>
+  <p class="sub">
+    Native Material login. The Angular app authenticates itself against the
+    /api/auth/* endpoints; no browser redirect is performed.
+  </p>
+
+  <mat-form-field appearance="filled">
+    <mat-label>Username</mat-label>
+    <input matInput formControlName="username" autocomplete="username" placeholder="employee" />
+  </mat-form-field>
+
+  <mat-form-field appearance="filled">
+    <mat-label>Password</mat-label>
+    <input
+      matInput
+      formControlName="password"
+      type="password"
+      autocomplete="current-password"
+      placeholder="password"
+    />
+  </mat-form-field>
+
+  <button mat-raised-button type="submit" color="primary" [disabled]="loading">
+    {{ loading ? 'Signing in…' : 'Sign in' }}
+  </button>
+
+  <p class="error" *ngIf="error">{{ error }}</p>
+</form>

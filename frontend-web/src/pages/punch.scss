@@ -1,0 +1,47 @@
+.punch-card {
+  max-width: 560px;
+  margin: 1rem auto;
+}
+
+.punch-card h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.punch-card .sub {
+  margin: 0 0 1.5rem;
+  font-size: 0.875rem;
+  color: var(--mat-sys-on-surface-variant);
+  opacity: 0.7;
+}
+
+.logs {
+  max-width: 900px;
+  margin: 2rem auto;
+}
+
+.logs h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.logs table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.logs th,
+.logs td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--mat-sys-on-surface-variant);
+}
+
+.error {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: var(--mat-error);
+}

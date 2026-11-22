@@ -1,0 +1,47 @@
+<form (submit)="punch()" [formGroup]="form" class="punch-card">
+  <h2>Punch</h2>
+  <p class="sub">
+    Record a raw punch for {{ employeeId }}. The method is checked against the
+    tenant policy, and the timestamp must fall inside the configured shift.
+  </p>
+
+  <mat-form-field appearance="filled">
+    <mat-label>Method</mat-label>
+    <mat-select #methodSelect [value]="method" (selectionChanged)="onMethodChange($event.value)">
+      @for (m of methods; track m) {
+        <mat-option [value]="m">{{ m }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="filled">
+    <mat-label>Timestamp</mat-label>
+    <input matInput formControlName="timestamp" type="datetime-local" />
+  </mat-form-field>
+
+  <button mat-raised-button type="submit" color="primary" [disabled]="loading">
+    {{ loading ? 'Recording…' : 'Punch in' }}
+  </button>
+
+  <p class="error" *ngIf="error">{{ error }}</p>
+</form>
+
+<div class="logs">
+  <h3>Recent punches</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Method</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (log of logs; track log.id) {
+        <tr>
+          <td>{{ log.start }}</td>
+          <td>{{ log.method }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

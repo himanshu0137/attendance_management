@@ -1,0 +1,19 @@
+<mat-toolbar color="primary">
+  <span class="brand">attendance_mangement</span>
+
+  <mat-button-toggle-group name="nav" style="margin-left: auto">
+    <mat-button-toggle value="punch" (onClick)="navigate($event.value)" aria-label="Punch">
+      Punch
+    </mat-button-toggle>
+    <mat-button-toggle value="reports" (onClick)="navigate($event.value)" aria-label="Reports">
+      Reports
+    </mat-button-toggle>
+    <mat-button-toggle value="slips" (onClick)="navigate($event.value)" aria-label="Slips">
+      Slips
+    </mat-button-toggle>
+  </mat-button-toggle-group>
+
+  <button mat-icon-button (click)="logout()" aria-label="Logout">
+    <mat-icon fontIcon="logout"></mat-icon>
+  </button>
+</mat-toolbar>

@@ -1,0 +1,35 @@
+<mat-form-field appearance="filled">
+  <mat-label>From</mat-label>
+  <input
+    matInput
+    [matDatepicker]="picker"
+    [matDatepickerInput]="start"
+    [value]="start"
+    [disabled]="disabled"
+  />
+  <mat-datepicker-toggle matPrefix [direction]="dir"></mat-datepicker-toggle>
+  <mat-datepicker #picker [startDate]="start" [endDate]="end" [disableRipple]="true"></mat-datepicker>
+</mat-form-field>
+
+<mat-form-field appearance="filled">
+  <mat-label>To</mat-label>
+  <input
+    matInput
+    [matDatepicker]="picker"
+    [matDatepickerInput]="end"
+    [value]="end"
+    [disabled]="disabled"
+  />
+  <mat-datepicker-toggle matPrefix [direction]="dir"></mat-datepicker-toggle>
+  <mat-datepicker #picker [startDate]="start" [endDate]="end" [disableRipple]="true"></mat-datepicker>
+</mat-form-field>
+
+<button
+  type="button"
+  mat-raised-button
+  color="primary"
+  (click)="apply()"
+  [disabled]="!start || !end || start > end"
+>
+  Apply
+</button>

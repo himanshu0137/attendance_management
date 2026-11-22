@@ -1,0 +1,69 @@
+.card {
+  max-width: 640px;
+  margin: 1rem auto;
+}
+
+.card h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.card .sub {
+  margin: 0 0 1.5rem;
+  font-size: 0.875rem;
+  color: var(--mat-sys-on-surface-variant);
+  opacity: 0.7;
+}
+
+.error {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: var(--mat-error);
+}
+
+.summary {
+  max-width: 640px;
+  margin: 1rem auto;
+}
+
+.summary h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.stats {
+  display: flex;
+  gap: 2rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  background: var(--mat-sys-surface-2);
+  border-radius: 4px;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.logs {
+  max-width: 900px;
+  margin: 2rem auto;
+}
+
+.logs h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 500;
+}

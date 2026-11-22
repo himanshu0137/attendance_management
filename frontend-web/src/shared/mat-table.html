@@ -1,0 +1,30 @@
+<mat-table [dataSource]="displayedRows" #table>
+  @for (col of columns; track col.key) {
+    <ng-container [matColumnDef]="col.key">
+      <mat-header-cell *matHeaderCellDef>
+        <th
+          [attr.aria-sort]="sortKey === col.key ? (sortDir === 'asc' ? 'ascending' : 'descending') : undefined"
+          [class.sortable]="col.sortable"
+          (click)="sort(col.key)"
+        >
+          {{ col.label }}
+        </th>
+      </mat-header-cell>
+      <td *matCellDef="let row">
+        {{ row[col.key] }}
+      </td>
+    </ng-container>
+  }
+</mat-table>
+
+<p class="page-label">Page {{ page }} of {{ pageCount }}</p>
+
+<mat-paginator
+  [length]="displayedRows.length"
+  [pageSize]="pageSize"
+  [pageSizeOptions]="pageSizeOptions"
+  [showFirstLastButtons]="true"
+  [pageIndex]="page - 1"
+  (page)="onPageChange($event)"
+>
+</mat-paginator>

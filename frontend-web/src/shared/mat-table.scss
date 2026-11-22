@@ -1,0 +1,32 @@
+mat-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-bottom: 1px solid var(--mat-sys-on-surface-variant);
+  cursor: pointer;
+}
+
+td {
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--mat-sys-on-surface-variant);
+  font-size: 0.875rem;
+  vertical-align: top;
+  word-break: break-word;
+}
+
+.sortable {
+  cursor: pointer;
+}
+
+.page-label {
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+  color: var(--mat-sys-on-surface-variant);
+  opacity: 0.7;
+}

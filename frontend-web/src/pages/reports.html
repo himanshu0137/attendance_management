@@ -1,0 +1,37 @@
+<div class="card">
+  <h2>Reports</h2>
+  <p class="sub">Aggregated attendance for {{ employeeId }} over a date range.</p>
+
+  <app-date-range [value]="range" (valueChanged)="range = $event"></app-date-range>
+
+  <button mat-raised-button type="button" color="primary" (click)="load()" [disabled]="loading">
+    {{ loading ? 'Loading…' : 'Load report' }}
+  </button>
+
+  <p class="error" *ngIf="error">{{ error }}</p>
+</div>
+
+<div class="summary" *ngIf="report">
+  <h3>Summary</h3>
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-label">Present days</span>
+      <span class="stat-value">{{ report.present_days }}</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Worked minutes</span>
+      <span class="stat-value">{{ report.worked_minutes }}</span>
+    </div>
+  </div>
+</div>
+
+<div class="logs">
+  <h3>Raw punches</h3>
+  <app-table
+    [columns]="columns"
+    [rows]="logs"
+    [pageSize]="50"
+    [pageSizeOptions]="[25, 50, 100]"
+    [page]="1"
+  ></app-table>
+</div>

@@ -1,0 +1,35 @@
+<form (submit)="generate()" [formGroup]="form" class="card">
+  <h2>Generate slip</h2>
+  <p class="sub">Generate a prorated monthly salary slip for {{ employeeId }}.</p>
+
+  <mat-form-field appearance="filled">
+    <mat-label>Month</mat-label>
+    <mat-select formControlName="month">
+      @for (m of months; track m) {
+        <mat-option [value]="m">{{ m }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="filled">
+    <mat-label>Year</mat-label>
+    <input matInput formControlName="year" type="number" />
+  </mat-form-field>
+
+  <button mat-raised-button type="submit" color="primary" [disabled]="loading">
+    {{ loading ? 'Generating…' : 'Generate slip' }}
+  </button>
+
+  <p class="error" *ngIf="error">{{ error }}</p>
+</form>
+
+<div class="slips">
+  <h3>Slips</h3>
+  <app-table
+    [columns]="columns"
+    [rows]="slips"
+    [pageSize]="50"
+    [pageSizeOptions]="[25, 50, 100]"
+    [page]="1"
+  ></app-table>
+</div>

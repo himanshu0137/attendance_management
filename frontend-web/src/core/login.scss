@@ -1,0 +1,27 @@
+.login-card {
+  max-width: 420px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: var(--mat-sys-surface-2);
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.login-card h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.login-card .sub {
+  margin: 0 0 1.5rem;
+  font-size: 0.875rem;
+  color: var(--mat-sys-on-surface-variant);
+  opacity: 0.7;
+}
+
+.login-card .error {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: var(--mat-error);
+}
