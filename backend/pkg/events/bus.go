@@ -7,13 +7,9 @@ import (
 	"github.com/google/uuid"
 )
 
-// Event represents a published event.
-type Event struct {
-	ID        uuid.UUID
-	Topic     string
-	TenantID  string
-	Payload   []byte
-	Timestamp int64
+// ID generates a new UUID for an event.
+func ID() uuid.UUID {
+	return uuid.New()
 }
 
 // HandlerFunc is a function that handles an event.

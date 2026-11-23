@@ -1,15 +1,13 @@
 package app
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"hunrx.com/attendance_management/pkg/config"
 	"hunrx.com/attendance_management/pkg/httpx"
 )
 
 // SetupAuth sets up the authentication endpoints.
-func SetupAuth(core *CoreContext, cfg config.ServerConfig) {
+func SetupAuth(core *CoreContext, cfg *config.Config) {
 	// Unauthenticated auth proxy endpoints.
 	core.Engine.POST("/api/auth/login", func(c *gin.Context) {
 		token, err := httpx.Login(c, cfg.KeycloakIssuerURL, cfg.KeycloakClientID, cfg.KeycloakClientSecret)

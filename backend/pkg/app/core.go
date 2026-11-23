@@ -11,7 +11,7 @@ import (
 )
 
 // Setup wires the core, resolves the active modules and mounts them.
-func Setup(ctx context.Context, cfg config.ServerConfig, pool *pgxpool.Pool, core *CoreContext) error {
+func Setup(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, core *CoreContext) error {
 	active, err := ResolveModules(cfg.EnabledModules)
 	if err != nil {
 		return err

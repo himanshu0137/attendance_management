@@ -15,23 +15,7 @@ import (
 func main() {
 	// Load configuration
 	cfg := config.Load()
-	if cfg.DatabaseURL == "" {
-		slog.Error("Database URL is required")
-		os.Exit(1)
-	}
-	if cfg.KeycloakIssuerURL == "" {
-		slog.Error("Keycloak Issuer URL is required")
-		os.Exit(1)
-	}
-	if cfg.KeycloakClientID == "" {
-		slog.Error("Keycloak Client ID is required")
-		os.Exit(1)
-	}
-	if cfg.KeycloakClientSecret == "" {
-		slog.Error("Keycloak Client Secret is required")
-		os.Exit(1)
-	}
-
+	
 	// Set up logging
 	var logLevel slog.Level
 	switch cfg.LogLevel {

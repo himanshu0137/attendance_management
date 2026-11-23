@@ -2,10 +2,11 @@ package app
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"hunrx.com/attendance_management/pkg/db"
 )
 
 // CoreContext holds the core application context.
@@ -20,7 +21,7 @@ type FeatureModule interface {
 	Name() string
 	
 	// Migrate runs database migrations for this module.
-	Migrate(ctx context.Context, db *DB) error
+	Migrate(ctx context.Context, db *db.DB) error
 	
 	// Mount mounts the module's routes onto the given router group.
 	Mount(core *CoreContext, group *gin.RouterGroup)

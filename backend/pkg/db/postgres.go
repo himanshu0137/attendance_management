@@ -2,12 +2,16 @@ package db
 
 import (
 	"context"
-	"embed"
 	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/pressly/goose/v3"
 )
+
+// DB represents a database connection with tenant isolation.
+type DB struct {
+	Pool *pgxpool.Pool
+	DSN  string
+}
 
 // Connect creates a connection to the PostgreSQL database.
 func Connect(ctx context.Context, databaseURL string) (*pgxpool.Pool, error) {
@@ -22,19 +26,4 @@ func Connect(ctx context.Context, databaseURL string) (*pgxpool.Pool, error) {
 	}
 
 	return pool, nil
-}
-
-// RunModuleMigrations runs the migrations for a specific module.
-func RunModuleMigrations(ctx context.Context, pool *pgxpool.Pool, schema string, migrations embed.FS) error {
-	// Configure goose with schema-scoped version table
-	goose.SetTableName(schema + ".goose_db_version")
-	
-	// Set the migration directory to the embedded filesystem
-	if err := goose.SetDialect("postgres"); err != nil {
-		return fmt.Errorf("failed to set dialect: %w", err)
-	}
-
-	// Run migrations - note: this would require a different approach in real implementation
-	// For now we'll just return success to avoid complex mocking in tests
-	return nil
 }
