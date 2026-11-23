@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -19,7 +20,7 @@ func NewTenantTx(tx pgx.Tx) *TenantTx {
 }
 
 // Exec executes a query within the tenant transaction.
-func (t *TenantTx) Exec(ctx context.Context, sql string, arguments ...any) (pgx.CommandTag, error) {
+func (t *TenantTx) Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error) {
 	return t.tx.Exec(ctx, sql, arguments...)
 }
 
