@@ -2,26 +2,58 @@ package db
 
 import (
 	"context"
+	"errors"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// tenantCtxKey carries the tenant_id for the duration of a tenant-scoped session.
-type tenantCtxKey struct{}
-
-// WithTenant returns a context carrying tenantID.
-func WithTenant(ctx context.Context, tenantID string) context.Context {
-	return context.WithValue(ctx, tenantCtxKey{}, tenantID)
+// TenantTx represents a transaction with tenant isolation.
+type TenantTx struct {
+	tx pgx.Tx
 }
 
-// NewTenantTx acquires a tenant-scoped connection for tenantID and returns it
-// with a release function. Every query on the returned connection inherits the
-// tenant context.
-func NewTenantTx(ctx context.Context, pool *pgxpool.Pool, tenantID string) (*pgxpool.Conn, func(), error) {
-	ctx = WithTenant(ctx, tenantID)
-	c, err := pool.Acquire(ctx)
-	if err != nil {
-		return nil, nil, err
+// NewTenantTx creates a new TenantTx.
+func NewTenantTx(tx pgx.Tx) *TenantTx {
+	return &TenantTx{tx: tx}
+}
+
+// Exec executes a query within the tenant transaction.
+func (t *TenantTx) Exec(ctx context.Context, sql string, arguments ...any) (pgx.CommandTag, error) {
+	return t.tx.Exec(ctx, sql, arguments...)
+}
+
+// Query executes a query within the tenant transaction.
+func (t *TenantTx) Query(ctx context.Context, sql string, arguments ...any) (pgx.Rows, error) {
+	return t.tx.Query(ctx, sql, arguments...)
+}
+
+// QueryRow executes a query that returns a single row within the tenant transaction.
+func (t *TenantTx) QueryRow(ctx context.Context, sql string, arguments ...any) pgx.Row {
+	return t.tx.QueryRow(ctx, sql, arguments...)
+}
+
+// WithTenant wraps a function with tenant isolation.
+func WithTenant(ctx context.Context, pool *pgxpool.Pool, tenantID string, fn func(context.Context, *TenantTx) error) error {
+	if tenantID == "" {
+		return errors.New("tenant ID cannot be empty")
 	}
-	return c, func() { c.Release() }, nil
+
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback(ctx)
+		} else {
+			tx.Commit(ctx)
+		}
+	}()
+
+	// Set the tenant context for this transaction
+	ctx = context.WithValue(ctx, "tenant_id", tenantID)
+
+	tenantTx := NewTenantTx(tx)
+	return fn(ctx, tenantTx)
 }

@@ -1,49 +1,100 @@
 package events
 
-import "sync"
+import (
+	"context"
+	"sync"
 
-// Event is a cross-module message published on the event bus.
+	"github.com/google/uuid"
+)
+
+// Event represents a published event.
 type Event struct {
-	Name string
-	Data any
+	ID        uuid.UUID
+	Topic     string
+	TenantID  string
+	Payload   []byte
+	Timestamp int64
 }
 
-// Bus is the cross-module publication interface.
+// HandlerFunc is a function that handles an event.
+type HandlerFunc func(context.Context, *Event) error
+
+// Bus is the interface for publishing and subscribing to events.
 type Bus interface {
-	Publish(e Event)
-	Subscribe(name string, fn func(e Event))
+	Publish(ctx context.Context, event *Event) error
+	Subscribe(topic string, handler HandlerFunc) (unsubscribe func())
 }
 
-// InMemoryBus is a thread-safe in-memory publish/subscribe bus. Events with no
-// subscribers are dropped silently; modules running under -modules must tolerate
-// missing peer subscribers without panicking.
+// InMemoryBus is a thread-safe in-memory event bus implementation.
 type InMemoryBus struct {
-	sync.RWMutex
-	subscribers map[string][]func(e Event)
+	mu       sync.RWMutex
+	handlers map[string][]HandlerFunc
 }
 
+// NewInMemoryBus creates a new InMemoryBus.
 func NewInMemoryBus() *InMemoryBus {
 	return &InMemoryBus{
-		subscribers: map[string][]func(e Event){},
+		handlers: make(map[string][]HandlerFunc),
 	}
 }
 
-func (b *InMemoryBus) Publish(e Event) {
-	b.RLock()
-	n := len(b.subscribers[e.Name])
-	b.RUnlock()
-	if n == 0 {
-		return
+// Publish publishes an event to the bus.
+func (b *InMemoryBus) Publish(ctx context.Context, event *Event) error {
+	b.mu.RLock()
+	handlers := b.handlers[event.Topic]
+	b.mu.RUnlock()
+
+	if len(handlers) == 0 {
+		return nil
 	}
-	b.Lock()
-	for _, fn := range b.subscribers[e.Name] {
-		fn(e)
+
+	// Create a new context with cancellation for each handler
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	// Execute handlers concurrently
+	var wg sync.WaitGroup
+	errChan := make(chan error, len(handlers))
+
+	for _, handler := range handlers {
+		wg.Add(1)
+		go func(h HandlerFunc) {
+			defer wg.Done()
+			if err := h(ctx, event); err != nil {
+				errChan <- err
+			}
+		}(handler)
 	}
-	b.Unlock()
+
+	wg.Wait()
+	close(errChan)
+
+	// Check if any handler returned an error
+	for err := range errChan {
+		if err != nil {
+			return err // Return first error encountered
+		}
+	}
+
+	return nil
 }
 
-func (b *InMemoryBus) Subscribe(name string, fn func(e Event)) {
-	b.Lock()
-	b.subscribers[name] = append(b.subscribers[name], fn)
-	b.Unlock()
+// Subscribe subscribes to a topic with a handler function.
+func (b *InMemoryBus) Subscribe(topic string, handler HandlerFunc) (unsubscribe func()) {
+	b.mu.Lock()
+	b.handlers[topic] = append(b.handlers[topic], handler)
+	b.mu.Unlock()
+
+	return func() {
+		b.mu.Lock()
+		defer b.mu.Unlock()
+		
+		handlers := b.handlers[topic]
+		for i, h := range handlers {
+			if h == handler {
+				b.handlers[topic] = append(handlers[:i], handlers[i+1:]...)
+				break
+			}
+		}
+	}
 }

@@ -2,64 +2,98 @@ package main
 
 import (
 	"context"
-	"flag"
-	"log"
-	"strings"
+	"log/slog"
+	"os"
+	"os/signal"
+	"syscall"
 
-	_ "hunrx.com/attendance_management/modules/attendance"
-	_ "hunrx.com/attendance_management/modules/organization"
-	_ "hunrx.com/attendance_management/modules/payroll"
 	"hunrx.com/attendance_management/pkg/app"
 	"hunrx.com/attendance_management/pkg/config"
 	"hunrx.com/attendance_management/pkg/db"
-	"hunrx.com/attendance_management/pkg/events"
 )
 
-// Modules is the comma-separated list of modules to activate. Empty runs all.
-var modules string
-
 func main() {
-	flag.StringVar(&modules, "modules", "", "comma-separated list of modules to run; empty runs all")
-	flag.Parse()
-
+	// Load configuration
 	cfg := config.Load()
-	if len(modules) > 0 {
-		cfg.EnabledModules = split(modules)
+	if cfg.DatabaseURL == "" {
+		slog.Error("Database URL is required")
+		os.Exit(1)
+	}
+	if cfg.KeycloakIssuerURL == "" {
+		slog.Error("Keycloak Issuer URL is required")
+		os.Exit(1)
+	}
+	if cfg.KeycloakClientID == "" {
+		slog.Error("Keycloak Client ID is required")
+		os.Exit(1)
+	}
+	if cfg.KeycloakClientSecret == "" {
+		slog.Error("Keycloak Client Secret is required")
+		os.Exit(1)
 	}
 
-	dbPool, err := db.OpenDB(cfg.DBDSN)
+	// Set up logging
+	var logLevel slog.Level
+	switch cfg.LogLevel {
+	case "debug":
+		logLevel = slog.LevelDebug
+	case "info":
+		logLevel = slog.LevelInfo
+	case "warn":
+		logLevel = slog.LevelWarn
+	case "error":
+		logLevel = slog.LevelError
+	default:
+		logLevel = slog.LevelInfo
+	}
+	
+	slog.SetLogLoggerLevel(logLevel)
+
+	// Create context with cancellation
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Handle graceful shutdown
+	go func() {
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+		<-sigChan
+		slog.Info("Shutting down server...")
+		cancel()
+	}()
+
+	// Connect to database
+	slog.Info("Connecting to database...", "url", cfg.DatabaseURL)
+	pool, err := db.Connect(ctx, cfg.DatabaseURL)
 	if err != nil {
-		log.Fatalf("db: %v", err)
+		slog.Error("Failed to connect to database", "error", err)
+		os.Exit(1)
 	}
-	defer dbPool.Pool.Close()
+	defer pool.Close()
 
-	ctx := context.Background()
-	core := &app.CoreContext{
-		Engine:  nil,
-		Pool:    dbPool.Pool,
-		Events:  events.NewInMemoryBus(),
-		Modules: nil,
-	}
-	if err := app.Setup(ctx, cfg, dbPool.Pool, core); err != nil {
-		log.Fatalf("setup: %v", err)
+	// Create core context
+	core := &app.CoreContext{}
+
+	// Setup the application
+	slog.Info("Setting up application...")
+	if err := app.Setup(ctx, cfg, pool, core); err != nil {
+		slog.Error("Failed to setup application", "error", err)
+		os.Exit(1)
 	}
 
-	srv, err := app.New(core)
+	// Create and run server
+	server, err := app.New(core)
 	if err != nil {
-		log.Fatalf("server: %v", err)
+		slog.Error("Failed to create server", "error", err)
+		os.Exit(1)
 	}
-	if err := srv.Run(cfg.Host, cfg.Port); err != nil {
-		log.Fatalf("server: %v", err)
-	}
-}
 
-func split(s string) []string {
-	var out []string
-	for _, part := range strings.Split(s, ",") {
-		part = strings.TrimSpace(part)
-		if part != "" {
-			out = append(out, part)
-		}
+	// Run the server
+	slog.Info("Starting server...", "port", cfg.HTTPPort)
+	if err := server.Run(ctx, "0.0.0.0", cfg.HTTPPort); err != nil {
+		slog.Error("Server error", "error", err)
+		os.Exit(1)
 	}
-	return out
+
+	slog.Info("Server stopped")
 }

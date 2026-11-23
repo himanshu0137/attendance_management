@@ -16,7 +16,7 @@ func Setup(ctx context.Context, cfg config.ServerConfig, pool *pgxpool.Pool, cor
 	if err != nil {
 		return err
 	}
-	dbPool := &db.DB{Pool: pool, DSN: cfg.DBDSN}
+	dbPool := &db.DB{Pool: pool, DSN: cfg.DatabaseURL}
 	if err != nil {
 		return err
 	}
