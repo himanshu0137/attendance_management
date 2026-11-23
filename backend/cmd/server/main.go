@@ -72,8 +72,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Run the server
-	slog.Info("Starting server...", "port", cfg.HTTPPort)
+	// Run the server - using 0.0.0.0 for external access and port 7080
+	slog.Info("Starting server...", "address", "0.0.0.0", "port", cfg.HTTPPort)
 	if err := server.Run(ctx, "0.0.0.0", cfg.HTTPPort); err != nil {
 		slog.Error("Server error", "error", err)
 		os.Exit(1)

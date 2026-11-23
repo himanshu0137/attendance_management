@@ -6,7 +6,7 @@ import (
 
 // Config represents the application configuration.
 type Config struct {
-	HTTPPort           int    `env:"ATTENDANCE_PORT" envDefault:"8080"`
+	HTTPPort           int    `env:"ATTENDANCE_PORT" envDefault:"7080"`
 	DatabaseURL        string `env:"ATTENDANCE_DB" envRequired:"true"`
 	KeycloakIssuerURL  string `env:"KEYCLOAK_ISSUER" envRequired:"true"`
 	KeycloakClientID   string `env:"KEYCLOAK_CLIENT_ID" envRequired:"true"`
