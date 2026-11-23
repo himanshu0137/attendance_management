@@ -71,7 +71,7 @@ The server uses environment variables from `.env` file. See `.env.example` for a
 
 ### Build
 ```bash
-go build -o server cmd/server/main.go
+go build -o server main.go
 ```
 
 ### Test

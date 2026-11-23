@@ -60,3 +60,30 @@ type Report struct {
 	PresentDays   int64 `json:"present_days"`
 	WorkedMinutes int64 `json:"worked_minutes"`
 }
+
+// Shift represents an employee shift
+type Shift struct {
+	ID          string    `json:"id"`
+	TenantID    string    `json:"tenant_id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	StartTime   time.Time `json:"start_time"`
+	EndTime     time.Time `json:"end_time"`
+	IsActive    bool      `json:"is_active"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+// AttendanceRule represents an attendance policy rule
+type AttendanceRule struct {
+	ID          string    `json:"id"`
+	TenantID    string    `json:"tenant_id"`
+	Name        string    `json:"rule_name"`
+	Description string    `json:"description"`
+	RuleType    string    `json:"rule_type"` // e.g., "late_arrival", "early_departure", "overtime"
+	Condition   map[string]interface{} `json:"condition"` // flexible conditions for the rule
+	Action      map[string]interface{} `json:"action"`    // action to take when rule is triggered
+	IsActive    bool      `json:"is_active"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}

@@ -56,6 +56,13 @@ This document specifies the complete attendance management system architecture, 
 - Event struct definition and HandlerFunc type
 - Bus interface with Publish/Subscribe methods
 
+### 6. Leave Management Module (`modules/leave`)
+- Employee leave request submission
+- HR approval workflow for leave requests
+- Leave type management (Casual, Sick, Earned, etc.)
+- Leave history tracking and reporting
+- Status tracking (PENDING, APPROVED, REJECTED)
+
 ### Frontend Applications
 
 #### Angular Employee Portal (`frontend/angular-app`)
@@ -229,3 +236,37 @@ LOG_LEVEL=info
 3. Connect frontend and mobile applications to backend APIs
 4. Conduct end-to-end integration testing
 5. Finalize documentation and deployment scripts
+
+## Leave Management Module Implementation Details
+
+The leave management module implements the following functionality:
+
+1. **Employee Leave Requests**:
+   - Submit leave requests with start date, end date, type, and description
+   - View personal leave history
+   - Status tracking (PENDING, APPROVED, REJECTED)
+
+2. **HR Approval Workflow**:
+   - Approve/reject leave requests
+   - Role-based access control (HR_MANAGER, ORG_ADMIN)
+   - Automatic status updates with approval timestamps
+
+3. **Leave Types**:
+   - Casual Leave
+   - Sick Leave  
+   - Earned Leave
+   - Other custom leave types
+
+4. **Database Schema**:
+   - `leave_requests` table with all required fields
+   - Indexes for performance optimization
+   - Data validation constraints
+
+5. **Integration with System Requirements**:
+   - TC-13.1: Insufficient leave balance rejection (requires additional leave balance tracking)
+   - TC-13.2: Approved leave & on-duty attendance lock (requires integration with attendance system)
+
+6. **Testing Coverage**:
+   - Unit tests for all core functionality
+   - Integration tests for API endpoints
+   - Role-based access control verification

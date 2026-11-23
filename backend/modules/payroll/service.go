@@ -83,6 +83,88 @@ func (s *Service) GetSlips(ctx context.Context, tenantID string) ([]SalarySlip, 
 	return s.repo.GetSlips(ctx, tenantID)
 }
 
+// CreateStatutoryCompliance creates a new statutory compliance rule
+func (s *Service) CreateStatutoryCompliance(ctx context.Context, tenantID string, compliance StatutoryCompliance) (*StatutoryCompliance, error) {
+	created, err := s.repo.CreateStatutoryCompliance(ctx, tenantID, compliance)
+	if err != nil {
+		return nil, err
+	}
+	return created, nil
+}
+
+// GetStatutoryCompliance retrieves a statutory compliance rule by ID
+func (s *Service) GetStatutoryCompliance(ctx context.Context, tenantID string, id string) (*StatutoryCompliance, error) {
+	compliance, err := s.repo.GetStatutoryCompliance(ctx, tenantID, id)
+	if err != nil {
+		return nil, err
+	}
+	return compliance, nil
+}
+
+// ListStatutoryCompliance lists statutory compliance rules for a tenant
+func (s *Service) ListStatutoryCompliance(ctx context.Context, tenantID string, page, limit int) ([]*StatutoryCompliance, int, error) {
+	compliances, total, err := s.repo.ListStatutoryCompliance(ctx, tenantID, page, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+	return compliances, total, nil
+}
+
+// UpdateStatutoryCompliance updates an existing statutory compliance rule
+func (s *Service) UpdateStatutoryCompliance(ctx context.Context, tenantID string, id string, compliance StatutoryCompliance) (*StatutoryCompliance, error) {
+	updated, err := s.repo.UpdateStatutoryCompliance(ctx, tenantID, id, compliance)
+	if err != nil {
+		return nil, err
+	}
+	return updated, nil
+}
+
+// DeleteStatutoryCompliance deletes a statutory compliance rule
+func (s *Service) DeleteStatutoryCompliance(ctx context.Context, tenantID string, id string) error {
+	return s.repo.DeleteStatutoryCompliance(ctx, tenantID, id)
+}
+
+// CreateEmployeeStatutoryDeduction creates employee-specific statutory deductions
+func (s *Service) CreateEmployeeStatutoryDeduction(ctx context.Context, employeeID string, deduction EmployeeStatutoryDeduction) (*EmployeeStatutoryDeduction, error) {
+	created, err := s.repo.CreateEmployeeStatutoryDeduction(ctx, employeeID, deduction)
+	if err != nil {
+		return nil, err
+	}
+	return created, nil
+}
+
+// GetEmployeeStatutoryDeduction retrieves employee-specific statutory deduction by ID
+func (s *Service) GetEmployeeStatutoryDeduction(ctx context.Context, employeeID string, id string) (*EmployeeStatutoryDeduction, error) {
+	deduction, err := s.repo.GetEmployeeStatutoryDeduction(ctx, employeeID, id)
+	if err != nil {
+		return nil, err
+	}
+	return deduction, nil
+}
+
+// ListEmployeeStatutoryDeductions lists employee-specific statutory deductions
+func (s *Service) ListEmployeeStatutoryDeductions(ctx context.Context, employeeID string, page, limit int) ([]*EmployeeStatutoryDeduction, int, error) {
+	deductions, total, err := s.repo.ListEmployeeStatutoryDeductions(ctx, employeeID, page, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+	return deductions, total, nil
+}
+
+// UpdateEmployeeStatutoryDeduction updates an employee-specific statutory deduction
+func (s *Service) UpdateEmployeeStatutoryDeduction(ctx context.Context, employeeID string, id string, deduction EmployeeStatutoryDeduction) (*EmployeeStatutoryDeduction, error) {
+	updated, err := s.repo.UpdateEmployeeStatutoryDeduction(ctx, employeeID, id, deduction)
+	if err != nil {
+		return nil, err
+	}
+	return updated, nil
+}
+
+// DeleteEmployeeStatutoryDeduction deletes an employee-specific statutory deduction
+func (s *Service) DeleteEmployeeStatutoryDeduction(ctx context.Context, employeeID string, id string) error {
+	return s.repo.DeleteEmployeeStatutoryDeduction(ctx, employeeID, id)
+}
+
 // prorate splits the monthly salary across the payable days of the month.
 func (s *Service) prorate(structure SalaryStructure, month time.Month, year int) ([]Day, Money) {
 	daysPerMonth := int64(structure.DaysPerMonth)

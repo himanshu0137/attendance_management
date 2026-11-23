@@ -5,41 +5,64 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// Repository handles database operations for users
-type Repository struct {
-	pool *pgxpool.Pool
-}
-
-// NewRepository creates a new user repository
-func NewRepository(pool *pgxpool.Pool) *Repository {
-	return &Repository{pool: pool}
-}
-
-// GetUser gets a user by tenant ID and user ID
-func (r *Repository) GetUser(ctx context.Context, tenantID, userID string) (*User, error) {
-	query := `
-		SELECT id, keycloak_sub, name, email, phone, role, language, created_at, updated_at
-		FROM user.users 
-		WHERE tenant_id = $1 AND id = $2
-	`
+type Repository interface {
+	CreateUser(ctx context.Context, user User) error
+	GetUser(ctx context.Context, id uuid.UUID) (*User, error)
+	UpdateUser(ctx context.Context, id uuid.UUID, req UserUpdateRequest) error
+	DeleteUser(ctx context.Context, id uuid.UUID) error
+	ListUsers(ctx context.Context, tenantID uuid.UUID, page, limit int) ([]*User, int, error)
 	
+	CreateRole(ctx context.Context, role Role) error
+	GetRole(ctx context.Context, id uuid.UUID) (*Role, error)
+	AssignRole(ctx context.Context, assignment UserRoleAssignment) error
+	GetUserRoles(ctx context.Context, userID uuid.UUID) ([]*UserRoleAssignment, error)
+	CheckPermission(ctx context.Context, userID uuid.UUID, permission string) (bool, error)
+}
+
+type repository struct {
+	db *pgxpool.Pool
+}
+
+func NewRepository(db *pgxpool.Pool) Repository {
+	return &repository{
+		db: db,
+	}
+}
+
+func (r *repository) CreateUser(ctx context.Context, user User) error {
+	query := `
+		INSERT INTO users (id, tenant_id, email, password_hash, first_name, last_name, is_active, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	`
+
+	_, err := r.db.Exec(ctx, query, user.ID, user.TenantID, user.Email, user.PasswordHash, user.FirstName, user.LastName, user.IsActive, user.CreatedAt, user.UpdatedAt)
+	return err
+}
+
+func (r *repository) GetUser(ctx context.Context, id uuid.UUID) (*User, error) {
+	query := `
+		SELECT id, tenant_id, email, password_hash, first_name, last_name, is_active, created_at, updated_at
+		FROM users
+		WHERE id = $1
+	`
+
 	var user User
-	err := r.pool.QueryRow(ctx, query, tenantID, userID).Scan(
+	err := r.db.QueryRow(ctx, query, id).Scan(
 		&user.ID,
-		&user.KeycloakSub,
-		&user.Name,
+		&user.TenantID,
 		&user.Email,
-		&user.Phone,
-		&user.Role,
-		&user.Language,
+		&user.PasswordHash,
+		&user.FirstName,
+		&user.LastName,
+		&user.IsActive,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
-	
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -50,71 +73,174 @@ func (r *Repository) GetUser(ctx context.Context, tenantID, userID string) (*Use
 	return &user, nil
 }
 
-// UpdateUser updates a user's details
-func (r *Repository) UpdateUser(ctx context.Context, tenantID, userID string, user *User) error {
+func (r *repository) UpdateUser(ctx context.Context, id uuid.UUID, req UserUpdateRequest) error {
 	query := `
-		UPDATE user.users 
-		SET name = $1, email = $2, phone = $3, language = $4, updated_at = NOW()
-		WHERE tenant_id = $5 AND id = $6
+		UPDATE users
+		SET first_name = $1, last_name = $2, is_active = $3, updated_at = $4
+		WHERE id = $5
 	`
-	
-	_, err := r.pool.Exec(ctx, query, user.Name, user.Email, user.Phone, user.Language, tenantID, userID)
+
+	_, err := r.db.Exec(ctx, query, req.FirstName, req.LastName, req.IsActive, time.Now(), id)
 	return err
 }
 
-// GetUserPreferences gets a user's preferences
-func (r *Repository) GetUserPreferences(ctx context.Context, tenantID, userID string) (*Preferences, error) {
+func (r *repository) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	query := `
-		SELECT theme, notifications, language, date_format, auto_clock_in
-		FROM user.preferences 
-		WHERE tenant_id = $1 AND user_id = $2
+		DELETE FROM users
+		WHERE id = $1
 	`
+
+	_, err := r.db.Exec(ctx, query, id)
+	return err
+}
+
+func (r *repository) ListUsers(ctx context.Context, tenantID uuid.UUID, page, limit int) ([]*User, int, error) {
+	offset := (page - 1) * limit
 	
-	var prefs Preferences
-	err := r.pool.QueryRow(ctx, query, tenantID, userID).Scan(
-		&prefs.Theme,
-		&prefs.Notifications,
-		&prefs.Language,
-		&prefs.DateFormat,
-		&prefs.AutoClockIn,
+	query := `
+		SELECT id, tenant_id, email, password_hash, first_name, last_name, is_active, created_at, updated_at
+		FROM users
+		WHERE tenant_id = $1
+		ORDER BY created_at DESC
+		LIMIT $2 OFFSET $3
+	`
+
+	rows, err := r.db.Query(ctx, query, tenantID, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var users []*User
+	for rows.Next() {
+		var user User
+		err := rows.Scan(
+			&user.ID,
+			&user.TenantID,
+			&user.Email,
+			&user.PasswordHash,
+			&user.FirstName,
+			&user.LastName,
+			&user.IsActive,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+		)
+		if err != nil {
+			return nil, 0, err
+		}
+		users = append(users, &user)
+	}
+
+	// Get total count
+	countQuery := `
+		SELECT COUNT(*)
+		FROM users
+		WHERE tenant_id = $1
+	`
+	var total int
+	err = r.db.QueryRow(ctx, countQuery, tenantID).Scan(&total)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return users, total, nil
+}
+
+func (r *repository) CreateRole(ctx context.Context, role Role) error {
+	query := `
+		INSERT INTO roles (id, tenant_id, name, description, permissions, created_at)
+		VALUES ($1, $2, $3, $4, $5, $6)
+	`
+
+	_, err := r.db.Exec(ctx, query, role.ID, role.TenantID, role.Name, role.Description, role.Permissions, role.CreatedAt)
+	return err
+}
+
+func (r *repository) GetRole(ctx context.Context, id uuid.UUID) (*Role, error) {
+	query := `
+		SELECT id, tenant_id, name, description, permissions, created_at
+		FROM roles
+		WHERE id = $1
+	`
+
+	var role Role
+	err := r.db.QueryRow(ctx, query, id).Scan(
+		&role.ID,
+		&role.TenantID,
+		&role.Name,
+		&role.Description,
+		&role.Permissions,
+		&role.CreatedAt,
 	)
-	
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return &Preferences{}, nil
+			return nil, nil
 		}
 		return nil, err
 	}
 	
-	return &prefs, nil
+	return &role, nil
 }
 
-// UpdateUserPreferences updates a user's preferences
-func (r *Repository) UpdateUserPreferences(ctx context.Context, tenantID, userID string, prefs *Preferences) error {
+func (r *repository) AssignRole(ctx context.Context, assignment UserRoleAssignment) error {
 	query := `
-		INSERT INTO user.preferences (tenant_id, user_id, theme, notifications, language, date_format, auto_clock_in)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
-		ON CONFLICT (tenant_id, user_id) 
-		DO UPDATE SET 
-			theme = EXCLUDED.theme,
-			notifications = EXCLUDED.notifications,
-			language = EXCLUDED.language,
-			date_format = EXCLUDED.date_format,
-			auto_clock_in = EXCLUDED.auto_clock_in,
-			updated_at = NOW()
+		INSERT INTO user_role_assignments (id, user_id, role_id, tenant_id, assigned_at, created_at)
+		VALUES ($1, $2, $3, $4, $5, $6)
 	`
-	
-	_, err := r.pool.Exec(ctx, query, tenantID, userID, prefs.Theme, prefs.Notifications, prefs.Language, prefs.DateFormat, prefs.AutoClockIn)
+
+	_, err := r.db.Exec(ctx, query, assignment.ID, assignment.UserID, assignment.RoleID, assignment.TenantID, assignment.AssignedAt, assignment.CreatedAt)
 	return err
 }
 
-// CreateUser creates a new user record
-func (r *Repository) CreateUser(ctx context.Context, tenantID, keycloakSub string, user *User) error {
+func (r *repository) GetUserRoles(ctx context.Context, userID uuid.UUID) ([]*UserRoleAssignment, error) {
 	query := `
-		INSERT INTO user.users (tenant_id, id, keycloak_sub, name, email, phone, role, language, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+		SELECT id, user_id, role_id, tenant_id, assigned_at, created_at
+		FROM user_role_assignments
+		WHERE user_id = $1
 	`
+
+	rows, err := r.db.Query(ctx, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var assignments []*UserRoleAssignment
+	for rows.Next() {
+		var assignment UserRoleAssignment
+		err := rows.Scan(
+			&assignment.ID,
+			&assignment.UserID,
+			&assignment.RoleID,
+			&assignment.TenantID,
+			&assignment.AssignedAt,
+			&assignment.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		assignments = append(assignments, &assignment)
+	}
+
+	return assignments, nil
+}
+
+func (r *repository) CheckPermission(ctx context.Context, userID uuid.UUID, permission string) (bool, error) {
+	query := `
+		SELECT EXISTS(
+			SELECT 1
+			FROM user_role_assignments ura
+			JOIN roles r ON ura.role_id = r.id
+			WHERE ura.user_id = $1
+			AND $2 = ANY(r.permissions)
+		)
+	`
+
+	var exists bool
+	err := r.db.QueryRow(ctx, query, userID, permission).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
 	
-	_, err := r.pool.Exec(ctx, query, tenantID, user.ID, keycloakSub, user.Name, user.Email, user.Phone, user.Role, user.Language)
-	return err
+	return exists, nil
 }

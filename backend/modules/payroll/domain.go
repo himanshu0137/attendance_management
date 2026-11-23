@@ -79,3 +79,31 @@ type SalarySlip struct {
 	BaseSalary Money     `json:"base_salary"`
 	Days       []Day     `json:"days"`
 }
+
+// StatutoryCompliance represents statutory compliance rules
+type StatutoryCompliance struct {
+	ID              string    `json:"id"`
+	TenantID        string    `json:"tenant_id"`
+	ComplianceType  string    `json:"compliance_type"` // e.g., "ESIC", "EPF", "Professional_Tax", "Income_Tax"
+	ApplicableFrom  time.Time `json:"applicable_from"`
+	ApplicableTo    *time.Time `json:"applicable_to,omitempty"`
+	Rate            float64   `json:"rate"`
+	MaxLimit        *float64  `json:"max_limit,omitempty"` // Optional maximum limit for calculation
+	IsActive        bool      `json:"is_active"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
+}
+
+// EmployeeStatutoryDeduction represents employee-specific statutory deductions
+type EmployeeStatutoryDeduction struct {
+	ID                string    `json:"id"`
+	EmployeeID        string    `json:"employee_id"`
+	StatutoryID       string    `json:"statutory_id"`
+	ApplicableFrom    time.Time `json:"applicable_from"`
+	ApplicableTo      *time.Time `json:"applicable_to,omitempty"`
+	Rate              float64   `json:"rate"`
+	MaxLimit          *float64  `json:"max_limit,omitempty"` // Optional maximum limit for calculation
+	IsActive          bool      `json:"is_active"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+}

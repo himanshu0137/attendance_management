@@ -2,196 +2,245 @@ package user
 
 import (
 	"context"
-	"time"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
-
-	"hunrx.com/attendance_management/pkg/app"
-	"hunrx.com/attendance_management/pkg/db"
-	"hunrx.com/attendance_management/pkg/httpx"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"hunrx.com/attendance_management/backend/pkg/config"
+	"hunrx.com/attendance_management/backend/pkg/middleware"
 )
 
-// init registers the module with the core.
-func init() {
-	app.Register(NewModule())
-}
-
-// Module is the feature module registration.
 type Module struct {
 	service *Service
 }
 
-// NewModule returns the module instance.
-func NewModule() app.FeatureModule {
-	return Module{}
+func NewModule(db *pgxpool.Pool, cfg *config.Config) (*Module, error) {
+	repo := NewRepository(db)
+	service := NewService(repo)
+	
+	return &Module{
+		service: service,
+	}, nil
 }
 
-// Name returns the module name.
-func (m Module) Name() string {
-	return "user"
+func (m *Module) RegisterRoutes(router *gin.RouterGroup) {
+	userGroup := router.Group("/users")
+	{
+		// Public routes - only for registration/invite handling
+		userGroup.POST("", m.createUser)
+		
+		// Protected routes with tenant context
+		userGroup.Use(middleware.RequireTenant())
+		userGroup.Use(middleware.RequireRole("ORG_ADMIN", "HR_MANAGER"))
+		userGroup.GET("/:id", m.getUser)
+		userGroup.PUT("/:id", m.updateUser)
+		userGroup.DELETE("/:id", m.deleteUser)
+		userGroup.GET("", m.listUsers)
+		
+		// Role management (admin only)
+		roleGroup := userGroup.Group("/roles")
+		{
+			roleGroup.Use(middleware.RequireRole("ORG_ADMIN"))
+			roleGroup.POST("", m.createRole)
+			roleGroup.GET("/:id", m.getRole)
+		}
+		
+		// Role assignment
+		assignmentGroup := userGroup.Group("/assignments")
+		{
+			assignmentGroup.Use(middleware.RequireRole("ORG_ADMIN", "HR_MANAGER"))
+			assignmentGroup.POST("", m.assignRole)
+		}
+	}
 }
 
-// Migrate runs the user schema migrations.
-func (m Module) Migrate(ctx context.Context, db *db.DB) error {
-	return db.Migrate(ctx, "user", "../migrations")
-}
-
-// Mount wires the handlers.
-func (m Module) Mount(core *app.CoreContext, rg *gin.RouterGroup) {
-	repo := NewRepository(core.Pool)
-	svc := NewService(repo)
-	m.service = svc
-	rg.GET("/me", m.getMe)
-	rg.PUT("/me", m.updateMe)
-	rg.GET("/me/preferences", m.getPreferences)
-	rg.PUT("/me/preferences", m.updatePreferences)
-}
-
-// GetMyDetails gets current user details
-// @Summary Get user details
-// @Description Retrieve current user's personal details
-// @Tags User
-// @Accept json
-// @Produce json
-// @Success 200 {object} User
-// @Router /api/user/me [get]
-func (m Module) getMe(c *gin.Context) {
-	tenantID, ok := httpx.TenantID(c)
-	if !ok {
-		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
+func (m *Module) createUser(c *gin.Context) {
+	tenantID, exists := c.Get("tenant_id")
+	if !exists {
+		c.JSON(400, gin.H{"error": "Tenant ID not found"})
 		return
 	}
 	
-	userID, ok := httpx.UserID(c)
-	if !ok {
-		httpx.Error(c, 401, "missing_user", "no user_id in token")
+	var req UserCreateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 	
-	user, err := m.service.GetMe(c.Request.Context(), tenantID, userID)
+	req.TenantID = tenantID.(uuid.UUID)
+	
+	user, err := m.service.CreateUser(c.Request.Context(), req)
 	if err != nil {
-		httpx.Error(c, 500, "db_error", err.Error())
+		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
 	
-	httpx.JSON(c, 200, user)
+	c.JSON(201, user)
 }
 
-// UpdateMyDetails updates current user details
-// @Summary Update user details
-// @Description Update current user's personal details
-// @Tags User
-// @Accept json
-// @Produce json
-// @Param user body UpdateUserReq true "User details"
-// @Success 200 {object} User
-// @Router /api/user/me [put]
-func (m Module) updateMe(c *gin.Context) {
-	tenantID, ok := httpx.TenantID(c)
-	if !ok {
-		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
-		return
-	}
-	
-	userID, ok := httpx.UserID(c)
-	if !ok {
-		httpx.Error(c, 401, "missing_user", "no user_id in token")
-		return
-	}
-	
-	req, ok := httpx.BindJSON[UpdateUserReq](c)
-	if !ok {
-		return
-	}
-	
-	user, err := m.service.UpdateMe(c.Request.Context(), tenantID, userID, req)
+func (m *Module) getUser(c *gin.Context) {
+	userID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		httpx.Error(c, 500, "db_error", err.Error())
+		c.JSON(400, gin.H{"error": "Invalid user ID"})
 		return
 	}
 	
-	httpx.JSON(c, 200, user)
-}
-
-// GetUserPreferences gets current user preferences
-// @Summary Get user preferences
-// @Description Retrieve current user's application preferences
-// @Tags User
-// @Accept json
-// @Produce json
-// @Success 200 {object} Preferences
-// @Router /api/user/me/preferences [get]
-func (m Module) getPreferences(c *gin.Context) {
-	tenantID, ok := httpx.TenantID(c)
-	if !ok {
-		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
-		return
-	}
-	
-	userID, ok := httpx.UserID(c)
-	if !ok {
-		httpx.Error(c, 401, "missing_user", "no user_id in token")
-		return
-	}
-	
-	prefs, err := m.service.GetPreferences(c.Request.Context(), tenantID, userID)
+	user, err := m.service.GetUser(c.Request.Context(), userID)
 	if err != nil {
-		httpx.Error(c, 500, "db_error", err.Error())
+		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
 	
-	httpx.JSON(c, 200, prefs)
+	if user == nil {
+		c.JSON(404, gin.H{"error": "User not found"})
+		return
+	}
+	
+	c.JSON(200, user)
 }
 
-// UpdateUserPreferences updates current user preferences
-// @Summary Update user preferences
-// @Description Update current user's application preferences
-// @Tags User
-// @Accept json
-// @Produce json
-// @Param preferences body Preferences true "User preferences"
-// @Success 200 {object} Preferences
-// @Router /api/user/me/preferences [put]
-func (m Module) updatePreferences(c *gin.Context) {
-	tenantID, ok := httpx.TenantID(c)
-	if !ok {
-		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
-		return
-	}
-	
-	userID, ok := httpx.UserID(c)
-	if !ok {
-		httpx.Error(c, 401, "missing_user", "no user_id in token")
-		return
-	}
-	
-	req, ok := httpx.BindJSON[Preferences](c)
-	if !ok {
-		return
-	}
-	
-	prefs, err := m.service.UpdatePreferences(c.Request.Context(), tenantID, userID, req)
+func (m *Module) updateUser(c *gin.Context) {
+	userID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		httpx.Error(c, 500, "db_error", err.Error())
+		c.JSON(400, gin.H{"error": "Invalid user ID"})
 		return
 	}
 	
-	httpx.JSON(c, 200, prefs)
+	var req UserUpdateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	
+	err = m.service.UpdateUser(c.Request.Context(), userID, req)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	
+	c.JSON(200, gin.H{"message": "User updated successfully"})
 }
 
-// UpdateUserReq represents the request for updating user details
-type UpdateUserReq struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Phone    string `json:"phone"`
-	Language string `json:"language"`
+func (m *Module) deleteUser(c *gin.Context) {
+	userID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid user ID"})
+		return
+	}
+	
+	err = m.service.DeleteUser(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	
+	c.JSON(200, gin.H{"message": "User deleted successfully"})
 }
 
-// Preferences represents user application preferences
-type Preferences struct {
-	Theme         string `json:"theme"`
-	Notifications bool   `json:"notifications"`
-	Language      string `json:"language"`
-	DateFormat    string `json:"date_format"`
-	AutoClockIn   bool   `json:"auto_clock_in"`
+func (m *Module) listUsers(c *gin.Context) {
+	tenantID, exists := c.Get("tenant_id")
+	if !exists {
+		c.JSON(400, gin.H{"error": "Tenant ID not found"})
+		return
+	}
+	
+	page := 1
+	limit := 10
+	
+	if pageStr := c.Query("page"); pageStr != "" {
+		fmt.Sscanf(pageStr, "%d", &page)
+	}
+	
+	if limitStr := c.Query("limit"); limitStr != "" {
+		fmt.Sscanf(limitStr, "%d", &limit)
+	}
+	
+	users, total, err := m.service.ListUsers(c.Request.Context(), tenantID.(uuid.UUID), page, limit)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	
+	c.JSON(200, gin.H{
+		"users": users,
+		"pagination": gin.H{
+			"page":  page,
+			"limit": limit,
+			"total": total,
+		},
+	})
+}
+
+func (m *Module) createRole(c *gin.Context) {
+	tenantID, exists := c.Get("tenant_id")
+	if !exists {
+		c.JSON(400, gin.H{"error": "Tenant ID not found"})
+		return
+	}
+	
+	var req struct {
+		Name        string   `json:"name"`
+		Description string   `json:"description"`
+		Permissions []string `json:"permissions"`
+	}
+	
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	
+	role, err := m.service.CreateRole(c.Request.Context(), tenantID.(tenantID).ID, req.Name, req.Description, req.Permissions)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	
+	c.JSON(201, role)
+}
+
+func (m *Module) getRole(c *gin.Context) {
+	roleID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid role ID"})
+		return
+	}
+	
+	role, err := m.service.GetRole(c.Request.Context(), roleID)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	
+	if role == nil {
+		c.JSON(404, gin.H{"error": "Role not found"})
+		return
+	}
+	
+	c.JSON(200, role)
+}
+
+func (m *Module) assignRole(c *gin.Context) {
+	var req struct {
+		UserID uuid.UUID `json:"user_id"`
+		RoleID uuid.UUID `json:"role_id"`
+	}
+	
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	
+	tenantID, exists := c.Get("tenant_id")
+	if !exists {
+		c.JSON(400, gin.H{"error": "Tenant ID not found"})
+		return
+	}
+	
+	err := m.service.AssignRole(c.Request.Context(), req.UserID, req.RoleID, tenantID.(tenantID).ID)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	
+	c.JSON(200, gin.H{"message": "Role assigned successfully"})
 }

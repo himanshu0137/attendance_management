@@ -37,12 +37,12 @@ func (s *Service) Punch(ctx context.Context, tenantID, employeeID string, method
 		return PunchLog{}, err
 	}
 	return PunchLog{
-		ID:       id,
-		TenantID: tenantID,
+		ID:         id,
+		TenantID:   tenantID,
 		EmployeeID: employeeID,
-		Method:   method,
-		Start:    ts,
-		End:      &ts,
+		Method:     method,
+		Start:      ts,
+		End:        &ts,
 	}, nil
 }
 
@@ -76,4 +76,86 @@ func (s *Service) GetPolicy(ctx context.Context, tenantID string) (TenantPolicy,
 		return p, err
 	}
 	return p, nil
+}
+
+// CreateShift creates a new shift for a tenant
+func (s *Service) CreateShift(ctx context.Context, tenantID string, shift Shift) (*Shift, error) {
+	createdShift, err := s.repo.CreateShift(ctx, tenantID, shift)
+	if err != nil {
+		return nil, err
+	}
+	return createdShift, nil
+}
+
+// GetShift retrieves a shift by ID
+func (s *Service) GetShift(ctx context.Context, tenantID string, shiftID string) (*Shift, error) {
+	shift, err := s.repo.GetShift(ctx, tenantID, shiftID)
+	if err != nil {
+		return nil, err
+	}
+	return shift, nil
+}
+
+// ListShifts lists shifts for a tenant
+func (s *Service) ListShifts(ctx context.Context, tenantID string, page, limit int) ([]*Shift, int, error) {
+	shifts, total, err := s.repo.ListShifts(ctx, tenantID, page, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+	return shifts, total, nil
+}
+
+// UpdateShift updates an existing shift
+func (s *Service) UpdateShift(ctx context.Context, tenantID string, shiftID string, shift Shift) (*Shift, error) {
+	updatedShift, err := s.repo.UpdateShift(ctx, tenantID, shiftID, shift)
+	if err != nil {
+		return nil, err
+	}
+	return updatedShift, nil
+}
+
+// DeleteShift deletes a shift
+func (s *Service) DeleteShift(ctx context.Context, tenantID string, shiftID string) error {
+	return s.repo.DeleteShift(ctx, tenantID, shiftID)
+}
+
+// CreateAttendanceRule creates a new attendance rule for a tenant
+func (s *Service) CreateAttendanceRule(ctx context.Context, tenantID string, rule AttendanceRule) (*AttendanceRule, error) {
+	createdRule, err := s.repo.CreateAttendanceRule(ctx, tenantID, rule)
+	if err != nil {
+		return nil, err
+	}
+	return createdRule, nil
+}
+
+// GetAttendanceRule retrieves an attendance rule by ID
+func (s *Service) GetAttendanceRule(ctx context.Context, tenantID string, ruleID string) (*AttendanceRule, error) {
+	rule, err := s.repo.GetAttendanceRule(ctx, tenantID, ruleID)
+	if err != nil {
+		return nil, err
+	}
+	return rule, nil
+}
+
+// ListAttendanceRules lists attendance rules for a tenant
+func (s *Service) ListAttendanceRules(ctx context.Context, tenantID string, page, limit int) ([]*AttendanceRule, int, error) {
+	rules, total, err := s.repo.ListAttendanceRules(ctx, tenantID, page, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+	return rules, total, nil
+}
+
+// UpdateAttendanceRule updates an existing attendance rule
+func (s *Service) UpdateAttendanceRule(ctx context.Context, tenantID string, ruleID string, rule AttendanceRule) (*AttendanceRule, error) {
+	updatedRule, err := s.repo.UpdateAttendanceRule(ctx, tenantID, ruleID, rule)
+	if err != nil {
+		return nil, err
+	}
+	return updatedRule, nil
+}
+
+// DeleteAttendanceRule deletes an attendance rule
+func (s *Service) DeleteAttendanceRule(ctx context.Context, tenantID string, ruleID string) error {
+	return s.repo.DeleteAttendanceRule(ctx, tenantID, ruleID)
 }
