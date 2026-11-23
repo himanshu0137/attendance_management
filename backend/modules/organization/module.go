@@ -48,6 +48,15 @@ func (m Module) Mount(core *app.CoreContext, rg *gin.RouterGroup) {
 	rg.POST("/:tenant_id/employees", m.createEmployee)
 }
 
+// GetOrganizationPolicy gets organization policy settings
+// @Summary Get organization policy
+// @Description Retrieve organization policy settings for a tenant
+// @Tags Organization
+// @Accept json
+// @Produce json
+// @Param tenant_id path string true "Tenant ID"
+// @Success 200 {object} OrgPolicy
+// @Router /api/organization/{tenant_id}/policies [get]
 func (m Module) getPolicy(c *gin.Context) {
 	tenantID, ok := httpx.TenantID(c)
 	if !ok {
@@ -66,6 +75,16 @@ func (m Module) getPolicy(c *gin.Context) {
 	httpx.JSON(c, 200, p)
 }
 
+// SetOrganizationPolicy sets organization policy settings
+// @Summary Set organization policy
+// @Description Update organization policy settings for a tenant
+// @Tags Organization
+// @Accept json
+// @Produce json
+// @Param tenant_id path string true "Tenant ID"
+// @Param policy body OrgPolicy true "Policy settings"
+// @Success 200 {object} OrgPolicy
+// @Router /api/organization/{tenant_id}/policies [post]
 func (m Module) setPolicy(c *gin.Context) {
 	tenantID, ok := httpx.TenantID(c)
 	if !ok {
@@ -83,6 +102,15 @@ func (m Module) setPolicy(c *gin.Context) {
 	httpx.JSON(c, 200, gin.H{"policy": p})
 }
 
+// ListEmployees lists organization employees
+// @Summary List employees
+// @Description Retrieve list of employees for a tenant
+// @Tags Organization
+// @Accept json
+// @Produce json
+// @Param tenant_id path string true "Tenant ID"
+// @Success 200 {array} Employee
+// @Router /api/organization/{tenant_id}/employees [get]
 func (m Module) listEmployees(c *gin.Context) {
 	tenantID, ok := httpx.TenantID(c)
 	if !ok {
@@ -97,6 +125,16 @@ func (m Module) listEmployees(c *gin.Context) {
 	httpx.JSON(c, 200, employees)
 }
 
+// CreateEmployee creates a new employee
+// @Summary Create employee
+// @Description Create a new employee for a tenant
+// @Tags Organization
+// @Accept json
+// @Produce json
+// @Param tenant_id path string true "Tenant ID"
+// @Param employee body CreateEmployeeReq true "Employee details"
+// @Success 201 "Created"
+// @Router /api/organization/{tenant_id}/employees [post]
 func (m Module) createEmployee(c *gin.Context) {
 	tenantID, ok := httpx.TenantID(c)
 	if !ok {

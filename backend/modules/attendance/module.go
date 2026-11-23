@@ -46,6 +46,15 @@ func (m Module) Mount(core *app.CoreContext, rg *gin.RouterGroup) {
 	rg.GET("/reports", m.report)
 }
 
+// PunchIn punches in for an employee
+// @Summary Punch in for employee
+// @Description Record a punch-in or punch-out for an employee
+// @Tags Attendance
+// @Accept json
+// @Produce json
+// @Param punch body PunchReq true "Punch request"
+// @Success 201 {object} PunchLog
+// @Router /api/attendance/punch [post]
 func (m Module) punch(c *gin.Context) {
 	tenantID, ok := httpx.TenantID(c)
 	if !ok {
@@ -72,6 +81,14 @@ func (m Module) punch(c *gin.Context) {
 	httpx.JSON(c, 201, log)
 }
 
+// GetEmployeeAttendance gets current employee attendance records
+// @Summary Get employee attendance records
+// @Description Retrieve attendance logs for the authenticated employee
+// @Tags Attendance
+// @Accept json
+// @Produce json
+// @Success 200 {array} PunchLog
+// @Router /api/attendance/me [get]
 func (m Module) me(c *gin.Context) {
 	tenantID, ok := httpx.TenantID(c)
 	if !ok {
@@ -86,6 +103,16 @@ func (m Module) me(c *gin.Context) {
 	httpx.JSON(c, 200, logs)
 }
 
+// GetAttendanceReport gets attendance report for a date range
+// @Summary Get attendance report
+// @Description Generate an attendance report for a date range
+// @Tags Attendance
+// @Accept json
+// @Produce json
+// @Param date_from query string true "Start date (YYYY-MM-DD)"
+// @Param date_to query string true "End date (YYYY-MM-DD)"
+// @Success 200 {object} Report
+// @Router /api/attendance/reports [get]
 func (m Module) report(c *gin.Context) {
 	tenantID, ok := httpx.TenantID(c)
 	if !ok {

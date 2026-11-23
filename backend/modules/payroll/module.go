@@ -45,6 +45,15 @@ func (m Module) Mount(core *app.CoreContext, rg *gin.RouterGroup) {
 	rg.GET("/slips", m.slips)
 }
 
+// GeneratePayrollSlip generates a payroll slip for an employee
+// @Summary Generate payroll slip
+// @Description Generate a payroll slip for an employee for a specific month/year
+// @Tags Payroll
+// @Accept json
+// @Produce json
+// @Param slip body GenerateSlipReq true "Payroll slip request"
+// @Success 201 {object} SalarySlip
+// @Router /api/payroll/slips/generate [post]
 func (m Module) generate(c *gin.Context) {
 	tenantID, ok := httpx.TenantID(c)
 	if !ok {
@@ -71,6 +80,14 @@ func (m Module) generate(c *gin.Context) {
 	httpx.JSON(c, 201, slip)
 }
 
+// GetMyPayrollSlips gets payroll slips for the authenticated employee
+// @Summary Get my payroll slips
+// @Description Retrieve payroll slips for the authenticated employee
+// @Tags Payroll
+// @Accept json
+// @Produce json
+// @Success 200 {array} []SalarySlip
+// @Router /api/payroll/slips/me [get]
 func (m Module) mySlips(c *gin.Context) {
 	tenantID, ok := httpx.TenantID(c)
 	if !ok {
@@ -85,6 +102,14 @@ func (m Module) mySlips(c *gin.Context) {
 	httpx.JSON(c, 200, slips)
 }
 
+// GetPayrollSlips gets all payroll slips for a tenant
+// @Summary Get payroll slips
+// @Description Retrieve all payroll slips for a tenant
+// @Tags Payroll
+// @Accept json
+// @Produce json
+// @Success 200 {array} []SalarySlip
+// @Router /api/payroll/slips [get]
 func (m Module) slips(c *gin.Context) {
 	tenantID, ok := httpx.TenantID(c)
 	if !ok {

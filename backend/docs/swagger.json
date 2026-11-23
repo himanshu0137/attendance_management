@@ -1,0 +1,702 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/api/attendance/me": {
+            "get": {
+                "description": "Retrieve attendance logs for the authenticated employee",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Attendance"
+                ],
+                "summary": "Get employee attendance records",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/attendance.PunchLog"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/attendance/punch": {
+            "post": {
+                "description": "Record a punch-in or punch-out for an employee",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Attendance"
+                ],
+                "summary": "Punch in for employee",
+                "parameters": [
+                    {
+                        "description": "Punch request",
+                        "name": "punch",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/attendance.PunchReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/attendance.PunchLog"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/attendance/reports": {
+            "get": {
+                "description": "Generate an attendance report for a date range",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Attendance"
+                ],
+                "summary": "Get attendance report",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD)",
+                        "name": "date_from",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date (YYYY-MM-DD)",
+                        "name": "date_to",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/attendance.Report"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/organization/{tenant_id}/employees": {
+            "get": {
+                "description": "Retrieve list of employees for a tenant",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "List employees",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "tenant_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/organization.Employee"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new employee for a tenant",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Create employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "tenant_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Employee details",
+                        "name": "employee",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/organization.CreateEmployeeReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
+            }
+        },
+        "/api/organization/{tenant_id}/policies": {
+            "get": {
+                "description": "Retrieve organization policy settings for a tenant",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Get organization policy",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "tenant_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/organization.OrgPolicy"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Update organization policy settings for a tenant",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Set organization policy",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "tenant_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Policy settings",
+                        "name": "policy",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/organization.OrgPolicy"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/organization.OrgPolicy"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/payroll/slips": {
+            "get": {
+                "description": "Retrieve all payroll slips for a tenant",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payroll"
+                ],
+                "summary": "Get payroll slips",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/payroll.SalarySlip"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/payroll/slips/generate": {
+            "post": {
+                "description": "Generate a payroll slip for an employee for a specific month/year",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payroll"
+                ],
+                "summary": "Generate payroll slip",
+                "parameters": [
+                    {
+                        "description": "Payroll slip request",
+                        "name": "slip",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/payroll.GenerateSlipReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/payroll.SalarySlip"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/payroll/slips/me": {
+            "get": {
+                "description": "Retrieve payroll slips for the authenticated employee",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payroll"
+                ],
+                "summary": "Get my payroll slips",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/payroll.SalarySlip"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/me": {
+            "get": {
+                "description": "Retrieve current user's personal details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get user details",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.User"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update current user's personal details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update user details",
+                "parameters": [
+                    {
+                        "description": "User details",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.UpdateUserReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.User"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/me/preferences": {
+            "get": {
+                "description": "Retrieve current user's application preferences",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get user preferences",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.Preferences"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update current user's application preferences",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update user preferences",
+                "parameters": [
+                    {
+                        "description": "User preferences",
+                        "name": "preferences",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.Preferences"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.Preferences"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "attendance.PunchLog": {
+            "type": "object",
+            "properties": {
+                "employee_id": {
+                    "type": "string"
+                },
+                "end": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "method": {
+                    "$ref": "#/definitions/attendance.PunchMethod"
+                },
+                "start": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "attendance.PunchMethod": {
+            "type": "string",
+            "enum": [
+                "FACESCAN_KIOSK",
+                "FINGERSCAN_KIOSK",
+                "WEB_LOGIN",
+                "MOBILE_LOGIN"
+            ],
+            "x-enum-varnames": [
+                "FacescanKiosk",
+                "FingerScanKiosk",
+                "WebLogin",
+                "MobileLogin"
+            ]
+        },
+        "attendance.PunchReq": {
+            "type": "object",
+            "properties": {
+                "employee_id": {
+                    "type": "string"
+                },
+                "method": {
+                    "$ref": "#/definitions/attendance.PunchMethod"
+                },
+                "timestamp": {
+                    "type": "string"
+                }
+            }
+        },
+        "attendance.Report": {
+            "type": "object",
+            "properties": {
+                "present_days": {
+                    "type": "integer"
+                },
+                "worked_minutes": {
+                    "type": "integer"
+                }
+            }
+        },
+        "organization.CreateEmployeeReq": {
+            "type": "object",
+            "properties": {
+                "role": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "organization.Employee": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "keycloak_sub": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "organization.OrgPolicy": {
+            "type": "object",
+            "properties": {
+                "methods": {
+                    "description": "Methods is the list of enabled punch methods.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "salary_slip_enabled": {
+                    "description": "SalarySlipEnabled controls whether payroll may generate salary slips.",
+                    "type": "boolean"
+                },
+                "shift_end_time": {
+                    "type": "string"
+                },
+                "shift_start_time": {
+                    "description": "ShiftStart/ShiftEnd bound the working day in local time.",
+                    "type": "string"
+                }
+            }
+        },
+        "payroll.Day": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "minutes": {
+                    "type": "integer"
+                }
+            }
+        },
+        "payroll.GenerateSlipReq": {
+            "type": "object",
+            "properties": {
+                "employee_id": {
+                    "type": "string"
+                },
+                "month": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
+        "payroll.Money": {
+            "type": "object"
+        },
+        "payroll.SalarySlip": {
+            "type": "object",
+            "properties": {
+                "base_salary": {
+                    "$ref": "#/definitions/payroll.Money"
+                },
+                "days": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/payroll.Day"
+                    }
+                },
+                "employee_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "period": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.Preferences": {
+            "type": "object",
+            "properties": {
+                "auto_clock_in": {
+                    "type": "boolean"
+                },
+                "date_format": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "notifications": {
+                    "type": "boolean"
+                },
+                "theme": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.UpdateUserReq": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.User": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "keycloak_sub": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/user.UserRole"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.UserRole": {
+            "type": "string",
+            "enum": [
+                "admin",
+                "manager",
+                "employee",
+                "guest"
+            ],
+            "x-enum-varnames": [
+                "UserRoleAdmin",
+                "UserRoleManager",
+                "UserRoleEmployee",
+                "UserRoleGuest"
+            ]
+        }
+    }
+}

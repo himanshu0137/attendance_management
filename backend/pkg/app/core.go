@@ -37,5 +37,9 @@ func Setup(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, core *Co
 		// })
 		m.Mount(core, core.Engine.Group("/api/"+m.Name()))
 	}
+	
+	// Setup Swagger documentation
+	SetupSwagger(core.Engine)
+	
 	return nil
 }

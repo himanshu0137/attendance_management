@@ -1,0 +1,464 @@
+definitions:
+  attendance.PunchLog:
+    properties:
+      employee_id:
+        type: string
+      end:
+        type: string
+      id:
+        type: integer
+      method:
+        $ref: '#/definitions/attendance.PunchMethod'
+      start:
+        type: string
+      tenant_id:
+        type: string
+    type: object
+  attendance.PunchMethod:
+    enum:
+    - FACESCAN_KIOSK
+    - FINGERSCAN_KIOSK
+    - WEB_LOGIN
+    - MOBILE_LOGIN
+    type: string
+    x-enum-varnames:
+    - FacescanKiosk
+    - FingerScanKiosk
+    - WebLogin
+    - MobileLogin
+  attendance.PunchReq:
+    properties:
+      employee_id:
+        type: string
+      method:
+        $ref: '#/definitions/attendance.PunchMethod'
+      timestamp:
+        type: string
+    type: object
+  attendance.Report:
+    properties:
+      present_days:
+        type: integer
+      worked_minutes:
+        type: integer
+    type: object
+  organization.CreateEmployeeReq:
+    properties:
+      role:
+        type: string
+      username:
+        type: string
+    type: object
+  organization.Employee:
+    properties:
+      id:
+        type: string
+      keycloak_sub:
+        type: string
+      role:
+        type: string
+    type: object
+  organization.OrgPolicy:
+    properties:
+      methods:
+        description: Methods is the list of enabled punch methods.
+        items:
+          type: string
+        type: array
+      salary_slip_enabled:
+        description: SalarySlipEnabled controls whether payroll may generate salary
+          slips.
+        type: boolean
+      shift_end_time:
+        type: string
+      shift_start_time:
+        description: ShiftStart/ShiftEnd bound the working day in local time.
+        type: string
+    type: object
+  payroll.Day:
+    properties:
+      date:
+        type: string
+      minutes:
+        type: integer
+    type: object
+  payroll.GenerateSlipReq:
+    properties:
+      employee_id:
+        type: string
+      month:
+        type: integer
+      year:
+        type: integer
+    type: object
+  payroll.Money:
+    type: object
+  payroll.SalarySlip:
+    properties:
+      base_salary:
+        $ref: '#/definitions/payroll.Money'
+      days:
+        items:
+          $ref: '#/definitions/payroll.Day'
+        type: array
+      employee_id:
+        type: string
+      id:
+        type: string
+      period:
+        type: string
+      tenant_id:
+        type: string
+    type: object
+  user.Preferences:
+    properties:
+      auto_clock_in:
+        type: boolean
+      date_format:
+        type: string
+      language:
+        type: string
+      notifications:
+        type: boolean
+      theme:
+        type: string
+    type: object
+  user.UpdateUserReq:
+    properties:
+      email:
+        type: string
+      language:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+    type: object
+  user.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      keycloak_sub:
+        type: string
+      language:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      role:
+        $ref: '#/definitions/user.UserRole'
+      updated_at:
+        type: string
+    type: object
+  user.UserRole:
+    enum:
+    - admin
+    - manager
+    - employee
+    - guest
+    type: string
+    x-enum-varnames:
+    - UserRoleAdmin
+    - UserRoleManager
+    - UserRoleEmployee
+    - UserRoleGuest
+info:
+  contact: {}
+paths:
+  /api/attendance/me:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve attendance logs for the authenticated employee
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/attendance.PunchLog'
+            type: array
+      summary: Get employee attendance records
+      tags:
+      - Attendance
+  /api/attendance/punch:
+    post:
+      consumes:
+      - application/json
+      description: Record a punch-in or punch-out for an employee
+      parameters:
+      - description: Punch request
+        in: body
+        name: punch
+        required: true
+        schema:
+          $ref: '#/definitions/attendance.PunchReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/attendance.PunchLog'
+      summary: Punch in for employee
+      tags:
+      - Attendance
+  /api/attendance/reports:
+    get:
+      consumes:
+      - application/json
+      description: Generate an attendance report for a date range
+      parameters:
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: date_from
+        required: true
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: date_to
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/attendance.Report'
+      summary: Get attendance report
+      tags:
+      - Attendance
+  /api/organization/{tenant_id}/employees:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve list of employees for a tenant
+      parameters:
+      - description: Tenant ID
+        in: path
+        name: tenant_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/organization.Employee'
+            type: array
+      summary: List employees
+      tags:
+      - Organization
+    post:
+      consumes:
+      - application/json
+      description: Create a new employee for a tenant
+      parameters:
+      - description: Tenant ID
+        in: path
+        name: tenant_id
+        required: true
+        type: string
+      - description: Employee details
+        in: body
+        name: employee
+        required: true
+        schema:
+          $ref: '#/definitions/organization.CreateEmployeeReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+      summary: Create employee
+      tags:
+      - Organization
+  /api/organization/{tenant_id}/policies:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve organization policy settings for a tenant
+      parameters:
+      - description: Tenant ID
+        in: path
+        name: tenant_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/organization.OrgPolicy'
+      summary: Get organization policy
+      tags:
+      - Organization
+    post:
+      consumes:
+      - application/json
+      description: Update organization policy settings for a tenant
+      parameters:
+      - description: Tenant ID
+        in: path
+        name: tenant_id
+        required: true
+        type: string
+      - description: Policy settings
+        in: body
+        name: policy
+        required: true
+        schema:
+          $ref: '#/definitions/organization.OrgPolicy'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/organization.OrgPolicy'
+      summary: Set organization policy
+      tags:
+      - Organization
+  /api/payroll/slips:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all payroll slips for a tenant
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/payroll.SalarySlip'
+              type: array
+            type: array
+      summary: Get payroll slips
+      tags:
+      - Payroll
+  /api/payroll/slips/generate:
+    post:
+      consumes:
+      - application/json
+      description: Generate a payroll slip for an employee for a specific month/year
+      parameters:
+      - description: Payroll slip request
+        in: body
+        name: slip
+        required: true
+        schema:
+          $ref: '#/definitions/payroll.GenerateSlipReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/payroll.SalarySlip'
+      summary: Generate payroll slip
+      tags:
+      - Payroll
+  /api/payroll/slips/me:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve payroll slips for the authenticated employee
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/payroll.SalarySlip'
+              type: array
+            type: array
+      summary: Get my payroll slips
+      tags:
+      - Payroll
+  /api/user/me:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve current user's personal details
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.User'
+      summary: Get user details
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: Update current user's personal details
+      parameters:
+      - description: User details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/user.UpdateUserReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.User'
+      summary: Update user details
+      tags:
+      - User
+  /api/user/me/preferences:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve current user's application preferences
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.Preferences'
+      summary: Get user preferences
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: Update current user's application preferences
+      parameters:
+      - description: User preferences
+        in: body
+        name: preferences
+        required: true
+        schema:
+          $ref: '#/definitions/user.Preferences'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.Preferences'
+      summary: Update user preferences
+      tags:
+      - User
+swagger: "2.0"

@@ -77,40 +77,64 @@ export LOG_LEVEL=debug
 
 1. **Angular Web App**:
 ```bash
-cd frontend/angular-app
+cd webapp/angular-app
 npm install
 ng serve
 ```
 
 2. **User Mobile App**:
 ```bash
-cd frontend/userapp
+cd userapp
 flutter pub get
 flutter run
 ```
 
 3. **Kiosk Mobile App**:
 ```bash
-cd frontend/kioskapp
+cd kioskapp
 flutter pub get
 flutter run
 ```
 
-## API Endpoints
+## API Documentation
 
-### Authentication
-- `POST /auth/login` - User login
-- `POST /auth/refresh` - Token refresh  
-- `POST /auth/logout` - User logout
+The system provides comprehensive API documentation through Swagger/OpenAPI:
 
-### Attendance Management
+- **Swagger UI**: http://localhost:7080/swagger/index.html
+- **OpenAPI JSON**: http://localhost:7080/swagger/doc.json
+
+### Available Endpoints
+
+The API includes endpoints across all modules:
+
+#### Authentication
+- `POST /api/auth/login` - User login with Keycloak
+- `POST /api/auth/refresh` - Refresh authentication token  
+- `POST /api/auth/logout` - Logout user
+
+#### Attendance Management
 - `POST /api/attendance/punch` - Record punch-in/out
 - `GET /api/attendance/me` - Get employee records
-- `GET /api/attendance/reports` - Get reports
+- `GET /api/attendance/reports` - Get attendance reports
 
-### Organization Management (Admin)
-- `GET /api/organization/employees` - List employees
-- `POST /api/organization/employees` - Create employee
+#### Organization Management (Admin)
+- `GET /api/organization/{tenant_id}/policies` - Get organization policy
+- `POST /api/organization/{tenant_id}/policies` - Set organization policy
+- `GET /api/organization/{tenant_id}/employees` - List employees
+- `POST /api/organization/{tenant_id}/employees` - Create employee
+
+#### Payroll Management
+- `POST /api/payroll/slips/generate` - Generate payroll slip
+- `GET /api/payroll/slips/me` - Get employee payroll slips
+- `GET /api/payroll/slips` - Get all payroll slips
+
+#### User Management
+- `GET /api/user/me` - Get current user details
+- `PUT /api/user/me` - Update current user details
+- `GET /api/user/me/preferences` - Get user preferences
+- `PUT /api/user/me/preferences` - Update user preferences
+
+All endpoints are documented with Swagger comments for full API exploration and testing.
 
 ## Testing
 
@@ -140,10 +164,11 @@ Environment variables:
 │   ├── pkg/               # Package libraries
 │   ├── modules/           # Feature modules
 │   └── docker-compose.yml # Docker configuration
-├── frontend/              # Frontend applications  
-│   ├── angular-app/       # Angular web app
-│   ├── userapp/           # Employee mobile app
-│   └── kioskapp/          # Kiosk mobile app
+├── webapp/                # Angular web frontend  
+│   ├── angular-app/       # Angular web app components
+├── flutter-app/           # Flutter mobile app (general)
+├── kioskapp/              # Kiosk mobile app
+└── userapp/               # User mobile app
 └── SPECIFICATION.md       # Complete system specification
 ```
 

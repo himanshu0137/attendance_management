@@ -19,7 +19,7 @@
 ### 2. Strict Architectural & Anti-Diversion Guardrails
 1. **One-Way Dependency Rule:**
    - `pkg/` (root SDK `attendance_management/pkg/...`) **MUST NEVER** import `modules/*`.
-   - Sibling feature modules (`attendance_management/modules/organization`, `attendance_management/modules/attendance`, `attendance_management/modules/payroll`) **MUST NEVER** import each other.
+   - Sibling feature modules (`attendance_management/modules/organization`, `attendance_management/modules/attendance`, `attendance_management/modules/payroll`, `attendance_management/modules/user`) **MUST NEVER** import each other.
    - Only `cmd/server/main.go` imports both `pkg/` and `modules/*` via blank imports (`_`) so every module self-registers into `pkg/app`'s registry via `init()`.
 2. **Single Binary Selective Activation (`cmd/server`):**
    - `cmd/server` compiles all modules into one binary and uses `-modules=organization,attendance` (or `ENABLED_MODULES` env var) to filter which modules run `Migrate()` and `Mount()`. If empty/omitted, **all** registered modules are activated.
@@ -139,11 +139,13 @@
   * `GET /me` (`EMPLOYEE`): Lists the authenticated user's punch logs and paired sessions (filterable by date range).
   * `GET /reports` (`ORG_ADMIN`): Aggregated organization-wide attendance report (present days, total worked minutes, late/early flags) filterable by date range and employee.
 
-#### C. Conditional Salary Slip Generation (`modules/payroll`, Schema: `payroll`)
-* Subscribes to `"org.policy.updated"` (syncing `salary_slip_enabled`) and `"attendance.session.completed"` (incrementing local payable day tallies).
-* **Endpoints (`/api/payroll/*`):**
-  * `POST /slips/generate` (`ORG_ADMIN`): Rejects with `403 Forbidden` if `salary_slip_enabled` is `false` for the tenant; otherwise computes prorated monthly salary slips from `payroll.salary_structures` and payable days.
-  * `GET /slips/me` (`EMPLOYEE`) & `GET /slips` (`ORG_ADMIN`): Retrieves generated salary slips.
+#### D. User Management (`modules/user`, Schema: `user`)
+* Stores user personal details and preferences
+* **Endpoints (`/api/user/*`):**
+  * `GET /me` - Get current user details
+  * `PUT /me` - Update current user details
+  * `GET /me/preferences` - Get user preferences
+  * `PUT /me/preferences` - Update user preferences
 
 ---
 
@@ -202,6 +204,14 @@ attendance_management/
 │       ├── repository.go                   # pgxpool queries scoped by tenant_id
 │       ├── service.go                      # Generates slips if org enabled; listens to events
 │       └── module.go                       # Gin handlers (/api/payroll/*) & init()
+│
+│   └── user/                               # Module 4: User details and preferences management
+│       ├── go.mod                          # "attendance_management/modules/user"
+│       ├── migrations/001_init.sql         # Schema: `user` (users, preferences)
+│       ├── domain.go                       # User roles and preference structures
+│       ├── repository.go                   # pgxpool queries scoped by tenant_id
+│       ├── service.go                      # User management and preferences handling
+│       └── module.go                       # Gin handlers (/api/user/*) & init()
 │
 ├── frontend-web/                           # Angular + Angular Material UI
 │   └── src/app/
