@@ -1,21 +1,14 @@
 package attendance
 
 import (
-	"context"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 
 	"hunrx.com/attendance_management/pkg/app"
-	"hunrx.com/attendance_management/pkg/db"
 	"hunrx.com/attendance_management/pkg/httpx"
 )
-
-// init registers the module with the core.
-func init() {
-	app.Register(NewModule())
-}
 
 // Module is the feature module registration.
 type Module struct {
@@ -24,24 +17,20 @@ type Module struct {
 
 // NewModule returns the module instance.
 func NewModule() app.FeatureModule {
-	return Module{}
+	return &Module{}
 }
 
 // Name returns the module name.
-func (m Module) Name() string {
+func (m *Module) Name() string {
 	return "attendance"
 }
 
-// Migrate runs the attendance schema migrations.
-func (m Module) Migrate(ctx context.Context, db *db.DB) error {
-	return db.Migrate(ctx, "attendance", "../migrations")
-}
-
 // Mount wires the handlers.
-func (m Module) Mount(core *app.CoreContext, rg *gin.RouterGroup) {
+func (m *Module) Mount(core *app.CoreContext, rg *gin.RouterGroup) {
 	repo := NewRepository(core.Pool)
 	svc := NewService(repo)
 	m.service = svc
+	app.Register(m)
 	rg.POST("/punch", m.punch)
 	rg.GET("/me", m.me)
 	rg.GET("/reports", m.report)

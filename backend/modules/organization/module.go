@@ -1,7 +1,6 @@
 package organization
 
 import (
-	"context"
 	"errors"
 	"regexp"
 	"time"
@@ -9,15 +8,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"attendance_management/pkg/app"
-	"attendance_management/pkg/db"
-	"attendance_management/pkg/httpx"
+	"hunrx.com/attendance_management/pkg/app"
+	"hunrx.com/attendance_management/pkg/httpx"
 )
-
-// init registers the module with the core.
-func init() {
-	app.Register(NewModule())
-}
 
 // Module is the feature module registration.
 type Module struct {
@@ -26,24 +19,20 @@ type Module struct {
 
 // NewModule returns the module instance.
 func NewModule() app.FeatureModule {
-	return Module{}
+	return &Module{}
 }
 
 // Name returns the module name.
-func (m Module) Name() string {
+func (m *Module) Name() string {
 	return "organization"
 }
 
-// Migrate runs the org schema migrations.
-func (m Module) Migrate(ctx context.Context, db *db.DB) error {
-	return db.Migrate(ctx, "org", "../migrations")
-}
-
 // Mount wires the handlers.
-func (m Module) Mount(core *app.CoreContext, rg *gin.RouterGroup) {
+func (m *Module) Mount(core *app.CoreContext, rg *gin.RouterGroup) {
 	repo := NewRepository(core.Pool)
 	svc := NewService(repo, core.Events, newKeycloak(core.Keycloak))
 	m.service = svc
+	app.Register(m)
 	rg.GET("/:tenant_id/policies", m.getPolicy)
 	rg.POST("/:tenant_id/policies", m.setPolicy)
 	rg.GET("/:tenant_id/employees", m.listEmployees)

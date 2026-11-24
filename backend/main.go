@@ -5,14 +5,15 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"slices"
 	"syscall"
 
 	// Import all modules to ensure they're initialized
-	_ "hunrx.com/attendance_management/modules/attendance"
-	_ "hunrx.com/attendance_management/modules/leave"
-	_ "hunrx.com/attendance_management/modules/organization"
-	_ "hunrx.com/attendance_management/modules/payroll"
-	_ "hunrx.com/attendance_management/modules/user"
+	"hunrx.com/attendance_management/modules/attendance"
+	"hunrx.com/attendance_management/modules/leave"
+	"hunrx.com/attendance_management/modules/organization"
+	"hunrx.com/attendance_management/modules/payroll"
+	"hunrx.com/attendance_management/modules/user"
 
 	"hunrx.com/attendance_management/pkg/app"
 	"hunrx.com/attendance_management/pkg/config"
@@ -70,6 +71,23 @@ func main() {
 	if err := app.Setup(ctx, cfg, pool, core); err != nil {
 		slog.Error("Failed to setup application", "error", err)
 		os.Exit(1)
+	}
+
+	var allModules = map[string]app.FeatureModule{
+		"organization": organization.NewModule(),
+		"user":         user.NewModule(),
+		"attendance":   attendance.NewModule(),
+		"payroll":      payroll.NewModule(),
+		"leave":        leave.NewModule(),
+	}
+
+	for _, m := range allModules {
+		if len(cfg.EnabledModules) > 0 {
+			if !slices.Contains(cfg.EnabledModules, m.Name()) {
+				continue
+			}
+		}
+		m.Mount(core, core.Engine.Group("/api/"+m.Name()))
 	}
 
 	// Create and run server

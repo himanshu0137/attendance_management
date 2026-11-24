@@ -1,14 +1,12 @@
 package payroll
 
 import (
-	"context"
 	"time"
 
 	"github.com/gin-gonic/gin"
 
-	"attendance_management/pkg/app"
-	"attendance_management/pkg/db"
-	"attendance_management/pkg/httpx"
+	"hunrx.com/attendance_management/pkg/app"
+	"hunrx.com/attendance_management/pkg/httpx"
 )
 
 // init registers the module with the core.
@@ -29,11 +27,6 @@ func NewModule() app.FeatureModule {
 // Name returns the module name.
 func (m Module) Name() string {
 	return "payroll"
-}
-
-// Migrate runs the payroll schema migrations.
-func (m Module) Migrate(ctx context.Context, db *db.DB) error {
-	return db.Migrate(ctx, "payroll", "../migrations")
 }
 
 // Mount wires the handlers.

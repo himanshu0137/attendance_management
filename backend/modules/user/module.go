@@ -5,52 +5,49 @@ import (
 	"uuid"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"hunrx.com/attendance_management/backend/pkg/config"
-	"hunrx.com/attendance_management/backend/pkg/middleware"
+	"hunrx.com/attendance_management/pkg/app"
+	"hunrx.com/attendance_management/pkg/httpx"
 )
 
 type Module struct {
 	service *Service
 }
 
-func NewModule(db *pgxpool.Pool, cfg *config.Config) (*Module, error) {
-	repo := NewRepository(db)
-	service := NewService(repo)
-
-	return &Module{
-		service: service,
-	}, nil
+func NewModule() app.FeatureModule {
+	return &Module{}
 }
 
-func (m *Module) RegisterRoutes(router *gin.RouterGroup) {
-	userGroup := router.Group("/users")
+func (m *Module) Name() string {
+	return "user"
+}
+
+func (m *Module) Mount(core *app.CoreContext, group *gin.RouterGroup) {
+	repo := NewRepository(core.Pool)
+	svc := NewService(repo)
+	m.service = svc
+	app.Register(m)
+	// Public routes - only for registration/invite handling
+	group.POST("", m.createUser)
+
+	group.Use(httpx.RequireRole("ORG_ADMIN", "HR_MANAGER"))
+	group.GET("/:id", m.getUser)
+	group.PUT("/:id", m.updateUser)
+	group.DELETE("/:id", m.deleteUser)
+	group.GET("", m.listUsers)
+
+	// Role management (admin only)
+	roleGroup := group.Group("/roles")
 	{
-		// Public routes - only for registration/invite handling
-		userGroup.POST("", m.createUser)
+		roleGroup.Use(httpx.RequireRole("ORG_ADMIN"))
+		roleGroup.POST("", m.createRole)
+		roleGroup.GET("/:id", m.getRole)
+	}
 
-		// Protected routes with tenant context
-		userGroup.Use(middleware.RequireTenant())
-		userGroup.Use(middleware.RequireRole("ORG_ADMIN", "HR_MANAGER"))
-		userGroup.GET("/:id", m.getUser)
-		userGroup.PUT("/:id", m.updateUser)
-		userGroup.DELETE("/:id", m.deleteUser)
-		userGroup.GET("", m.listUsers)
-
-		// Role management (admin only)
-		roleGroup := userGroup.Group("/roles")
-		{
-			roleGroup.Use(middleware.RequireRole("ORG_ADMIN"))
-			roleGroup.POST("", m.createRole)
-			roleGroup.GET("/:id", m.getRole)
-		}
-
-		// Role assignment
-		assignmentGroup := userGroup.Group("/assignments")
-		{
-			assignmentGroup.Use(middleware.RequireRole("ORG_ADMIN", "HR_MANAGER"))
-			assignmentGroup.POST("", m.assignRole)
-		}
+	// Role assignment
+	assignmentGroup := group.Group("/assignments")
+	{
+		assignmentGroup.Use(httpx.RequireRole("ORG_ADMIN", "HR_MANAGER"))
+		assignmentGroup.POST("", m.assignRole)
 	}
 }
 

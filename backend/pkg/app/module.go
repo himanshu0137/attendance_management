@@ -1,28 +1,21 @@
 package app
 
 import (
-	"context"
-
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
-
-	"attendance_management/pkg/db"
 )
 
 // CoreContext holds the core application context.
 type CoreContext struct {
-	Engine   *gin.Engine
-	Modules  []FeatureModule
+	Engine  *gin.Engine
+	Modules []FeatureModule
 }
 
 // FeatureModule represents a feature module in the application.
 type FeatureModule interface {
 	// Name returns the name of the module.
 	Name() string
-	
-	// Migrate runs database migrations for this module.
-	Migrate(ctx context.Context, db *db.DB) error
-	
+
 	// Mount mounts the module's routes onto the given router group.
 	Mount(core *CoreContext, group *gin.RouterGroup)
 }
@@ -43,7 +36,7 @@ func ResolveModules(requested []string) ([]FeatureModule, error) {
 	if len(requested) == 0 {
 		return modules, nil
 	}
-	
+
 	var resolved []FeatureModule
 	for _, name := range requested {
 		for _, module := range modules {
@@ -53,7 +46,7 @@ func ResolveModules(requested []string) ([]FeatureModule, error) {
 			}
 		}
 	}
-	
+
 	return resolved, nil
 }
 
