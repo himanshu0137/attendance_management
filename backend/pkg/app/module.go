@@ -9,6 +9,7 @@ import (
 type CoreContext struct {
 	Engine  *gin.Engine
 	Modules []FeatureModule
+	Pool    *pgxpool.Pool
 }
 
 // FeatureModule represents a feature module in the application.
@@ -24,36 +25,4 @@ type FeatureModule interface {
 type DB struct {
 	Pool *pgxpool.Pool
 	DSN  string
-}
-
-// Register registers a feature module.
-func Register(module FeatureModule) {
-	modules = append(modules, module)
-}
-
-// ResolveModules resolves the modules based on the requested names.
-func ResolveModules(requested []string) ([]FeatureModule, error) {
-	if len(requested) == 0 {
-		return modules, nil
-	}
-
-	var resolved []FeatureModule
-	for _, name := range requested {
-		for _, module := range modules {
-			if module.Name() == name {
-				resolved = append(resolved, module)
-				break
-			}
-		}
-	}
-
-	return resolved, nil
-}
-
-// Core modules registry.
-var modules []FeatureModule
-
-// GetModules returns the list of registered modules.
-func GetModules() []FeatureModule {
-	return modules
 }

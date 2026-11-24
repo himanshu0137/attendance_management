@@ -9,11 +9,6 @@ import (
 	"hunrx.com/attendance_management/pkg/httpx"
 )
 
-// init registers the module with the core.
-func init() {
-	app.Register(NewModule())
-}
-
 // Module is the feature module registration.
 type Module struct {
 	service *Service

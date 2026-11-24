@@ -25,7 +25,6 @@ func (m *Module) Mount(core *app.CoreContext, group *gin.RouterGroup) {
 	repo := NewRepository(core.Pool)
 	svc := NewService(repo)
 	m.service = svc
-	app.Register(m)
 	// Public routes - only for registration/invite handling
 	group.POST("", m.createUser)
 

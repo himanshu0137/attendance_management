@@ -26,7 +26,6 @@ func (m *Module) Mount(core *app.CoreContext, group *gin.RouterGroup) {
 	repo := NewRepository(core.Pool)
 	svc := NewService(repo)
 	m.service = svc
-	app.Register(m)
 	// Public routes - leave requests can be submitted by employees
 	group.POST("", m.createLeaveRequest)
 

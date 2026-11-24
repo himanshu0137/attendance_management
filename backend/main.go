@@ -65,6 +65,7 @@ func main() {
 
 	// Create core context
 	core := &app.CoreContext{}
+	core.Pool = pool
 
 	// Setup the application
 	slog.Info("Setting up application...")

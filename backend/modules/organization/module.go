@@ -30,9 +30,8 @@ func (m *Module) Name() string {
 // Mount wires the handlers.
 func (m *Module) Mount(core *app.CoreContext, rg *gin.RouterGroup) {
 	repo := NewRepository(core.Pool)
-	svc := NewService(repo, core.Events, newKeycloak(core.Keycloak))
+	svc := NewService(repo)
 	m.service = svc
-	app.Register(m)
 	rg.GET("/:tenant_id/policies", m.getPolicy)
 	rg.POST("/:tenant_id/policies", m.setPolicy)
 	rg.GET("/:tenant_id/employees", m.listEmployees)
@@ -115,7 +114,7 @@ func (m Module) listEmployees(c *gin.Context) {
 		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
 		return
 	}
-	employees, err := m.service.ListEmployees(c.Request.Context(), tenantID)
+	employees, _, err := m.service.ListEmployees(c.Request.Context(), tenantID, 10, 10)
 	if err != nil {
 		httpx.Error(c, 500, "db_error", err.Error())
 		return

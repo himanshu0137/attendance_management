@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // Service handles business logic for organizations.
@@ -22,16 +21,16 @@ func NewService(repo *Repository) *Service {
 func (s *Service) CreateOrganization(ctx context.Context, req CreateOrganizationRequest) (*Organization, error) {
 	// Generate UUID for the organization
 	orgID := uuid.New()
-	
+
 	// Set created timestamp
 	req.CreatedAt = time.Now()
-	
+
 	// Create the organization in the repository
 	org, err := s.repo.CreateOrganization(ctx, orgID, req)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return org, nil
 }
 
@@ -46,7 +45,7 @@ func (s *Service) UpdateOrganization(ctx context.Context, id uuid.UUID, req Upda
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return org, nil
 }
 
@@ -58,12 +57,12 @@ func (s *Service) DeleteOrganization(ctx context.Context, id uuid.UUID) error {
 // CreateBranch creates a new branch.
 func (s *Service) CreateBranch(ctx context.Context, req CreateBranchRequest) (*Branch, error) {
 	branchID := uuid.New()
-	
+
 	branch, err := s.repo.CreateBranch(ctx, branchID, req)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return branch, nil
 }
 
@@ -83,7 +82,7 @@ func (s *Service) UpdateBranch(ctx context.Context, id uuid.UUID, req UpdateBran
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return branch, nil
 }
 
@@ -95,12 +94,12 @@ func (s *Service) DeleteBranch(ctx context.Context, id uuid.UUID, tenantID strin
 // CreateEmployee creates a new employee.
 func (s *Service) CreateEmployee(ctx context.Context, req CreateEmployeeRequest) (*Employee, error) {
 	employeeID := uuid.New()
-	
+
 	employee, err := s.repo.CreateEmployee(ctx, employeeID, req)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return employee, nil
 }
 
@@ -120,7 +119,7 @@ func (s *Service) UpdateEmployee(ctx context.Context, id uuid.UUID, req UpdateEm
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return employee, nil
 }
 
@@ -136,31 +135,31 @@ func (s *Service) CreateEmployeeWithDocuments(ctx context.Context, req CreateEmp
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Set the employee code in the request
 	req.EmployeeCode = employeeCode
-	
+
 	employeeID := uuid.New()
-	
+
 	// Create the employee with documents
 	employee, err := s.repo.CreateEmployeeWithDocuments(ctx, employeeID, req)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return employee, nil
 }
 
 // BulkImportEmployees imports multiple employees from CSV/Excel
 func (s *Service) BulkImportEmployees(ctx context.Context, tenantID string, employees []CreateEmployeeRequest) ([]*EmployeeImportResult, error) {
 	var results []*EmployeeImportResult
-	
+
 	for _, empReq := range employees {
 		result := &EmployeeImportResult{
 			EmployeeCode: empReq.EmployeeCode,
 			Status:       "SUCCESS",
 		}
-		
+
 		// Check if employee code already exists
 		existingEmp, err := s.repo.GetEmployeeByCode(ctx, tenantID, empReq.EmployeeCode)
 		if err == nil && existingEmp != nil {
@@ -169,7 +168,7 @@ func (s *Service) BulkImportEmployees(ctx context.Context, tenantID string, empl
 			results = append(results, result)
 			continue
 		}
-		
+
 		// Create employee
 		employeeID := uuid.New()
 		emp, err := s.repo.CreateEmployee(ctx, employeeID, empReq)
@@ -179,11 +178,11 @@ func (s *Service) BulkImportEmployees(ctx context.Context, tenantID string, empl
 			results = append(results, result)
 			continue
 		}
-		
+
 		result.EmployeeID = emp.ID.String()
 		results = append(results, result)
 	}
-	
+
 	return results, nil
 }
 
@@ -191,7 +190,7 @@ func (s *Service) BulkImportEmployees(ctx context.Context, tenantID string, empl
 func (s *Service) generateUniqueEmployeeCode(ctx context.Context, tenantID string) (string, error) {
 	// Simple approach: EMP-{tenant_id}-{counter}
 	// In real implementation, this would be more sophisticated with database checks
-	
+
 	// For now, we'll use a simple pattern - in production this should check against existing codes
 	return "EMP-" + tenantID + "-" + time.Now().Format("20060102150405"), nil
 }
@@ -207,7 +206,7 @@ func (s *Service) GenerateOfferLetter(ctx context.Context, employeeID uuid.UUID,
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// In a real implementation, this would use a templating engine to generate PDF
 	// For now, we'll return mock data
 	offerLetterContent := []byte("Offer Letter for " + employee.FirstName + " " + employee.LastName)
@@ -221,19 +220,19 @@ func (s *Service) SetEmployeeExitStatus(ctx context.Context, employeeID uuid.UUI
 	if err != nil {
 		return err
 	}
-	
+
 	// Update employee status to exited
 	err = s.repo.UpdateEmployeeExitStatus(ctx, employeeID, tenantID, exitStatus)
 	if err != nil {
 		return err
 	}
-	
+
 	// Process final settlement if needed
 	if exitStatus.SettlementDetails != nil {
 		// Handle F&F settlement logic here
 		// This would include calculating net payable, updating balances, etc.
 	}
-	
+
 	return nil
 }
 
@@ -243,12 +242,12 @@ func (s *Service) CalculateFinalSettlement(ctx context.Context, employeeID uuid.
 	// - Encashable leave days
 	// - Pending advances/loans
 	// - Net payable amount
-	
+
 	return &FinalSettlement{
-		EncashableLeaveDays: 5,
+		EncashableLeaveDays:   5,
 		LeaveEncashmentAmount: 5000,
 		PendingAdvanceBalance: 2000,
-		NetPayable: 3000,
+		NetPayable:            3000,
 	}, nil
 }
 
@@ -259,7 +258,7 @@ func (s *Service) CreateSalaryStructure(ctx context.Context, employeeID uuid.UUI
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return salaryStruct, nil
 }
 
@@ -274,7 +273,7 @@ func (s *Service) UpdateSalaryStructure(ctx context.Context, employeeID uuid.UUI
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return salaryStruct, nil
 }
 
@@ -285,21 +284,21 @@ func (s *Service) OnboardEmployee(ctx context.Context, employeeID uuid.UUID, ten
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// In a real implementation, we would:
 	// 1. Store the documents in a secure location (S3, local storage, etc.)
 	// 2. Update employee with onboarding details
 	// 3. Set initial status to onboarded
-	
+
 	// For now, we'll mock this functionality and return what we have
 	result := &EmployeeWithDocuments{
-		Employee: employee,
-		Documents: req.Documents,
+		Employee:    employee,
+		Documents:   req.Documents,
 		JoiningDate: req.JoiningDate,
-		Position: req.Position,
-		Department: req.Department,
+		Position:    req.Position,
+		Department:  req.Department,
 	}
-	
+
 	return result, nil
 }
 
@@ -309,12 +308,12 @@ func (s *Service) GenerateHRLetter(ctx context.Context, employeeID uuid.UUID, te
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// In a real implementation, this would:
 	// 1. Generate a PDF using a templating engine (like Go templates or docxtemplater)
 	// 2. Store it in cloud storage
 	// 3. Return the URL to access it
-	
+
 	// For now, we'll create mock content based on letter type
 	var content []byte
 	switch letterType {
@@ -325,12 +324,12 @@ func (s *Service) GenerateHRLetter(ctx context.Context, employeeID uuid.UUID, te
 	default:
 		content = []byte("HR Letter for " + employee.FirstName + " " + employee.LastName)
 	}
-	
+
 	result := &HRLetterResponse{
 		LetterType: letterType,
 		Content:    content,
 		URL:        "", // In real implementation, this would be the URL to the generated document
 	}
-	
+
 	return result, nil
 }
