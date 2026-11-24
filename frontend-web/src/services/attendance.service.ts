@@ -1,52 +1,62 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ApiBaseService } from './api-base.service';
+import { Shift } from '../shared/models/shift.model';
+import { AttendanceRule } from '../shared/models/attendance-rule.model';
 
-// PunchMethod is the biometric or login channel used for a punch.
-export type PunchMethod =
-  | 'FACESCAN_KIOSK'
-  | 'FINGERSCAN_KIOSK'
-  | 'WEB_LOGIN'
-  | 'MOBILE_LOGIN';
-
-// Raw punch event returned by the attendance service.
-export interface PunchLog {
-  id: number;
-  tenant_id: string;
-  employee_id: string;
-  method: string;
-  start: string;
-  end: string | null;
-}
-
-// Aggregated attendance for a date range.
-export interface AttendanceReport {
-  present_days: number;
-  worked_minutes: number;
-}
-
-@Injectable({ providedIn: 'root' })
-export class AttendanceService {
-  constructor(private http: HttpClient) {}
-
-  // Records a raw IN/OUT event for the employee.
-  punch(employeeId: string, method: PunchMethod, timestamp: string): Observable<PunchLog> {
-    return this.http.post<PunchLog>('/api/attendance/punch', {
-      employee_id: employeeId,
-      method,
-      timestamp,
-    });
+@Injectable({
+  providedIn: 'root'
+})
+export class AttendanceService extends ApiBaseService {
+  
+  constructor(protected http: HttpClient) {
+    super(http);
   }
 
-  // Returns the tenant's raw punch events.
-  getLogs(tenantId: string): Observable<PunchLog[]> {
-    return this.http.get<PunchLog[]>(`/api/attendance/me`);
+  // Shift Management
+  createShift(tenantId: string, shiftData: Shift): Observable<Shift> {
+    return this.http.post<Shift>(`${this.baseUrl}/attendance/shifts`, shiftData);
   }
 
-  // Aggregates the tenant's raw punches for a date range.
-  report(tenantId: string, dateFrom: string, dateTo: string): Observable<AttendanceReport> {
-    return this.http.get<AttendanceReport>(`/api/attendance/reports`, {
-      params: { date_from: dateFrom, date_to: dateTo },
-    });
+  getShift(tenantId: string, shiftId: string): Observable<Shift> {
+    return this.http.get<Shift>(`${this.baseUrl}/attendance/shifts/${shiftId}`);
+  }
+
+  listShifts(tenantId: string, page: number = 1, limit: number = 20): Observable<{ shifts: Shift[], total: number }> {
+    return this.http.get<{ shifts: Shift[], total: number }>(
+      `${this.baseUrl}/attendance/shifts?page=${page}&limit=${limit}`
+    );
+  }
+
+  updateShift(tenantId: string, shiftId: string, shiftData: Shift): Observable<Shift> {
+    return this.http.put<Shift>(`${this.baseUrl}/attendance/shifts/${shiftId}`, shiftData);
+  }
+
+  deleteShift(tenantId: string, shiftId: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/attendance/shifts/${shiftId}`);
+  }
+
+  // Attendance Rules
+  createAttendanceRule(tenantId: string, ruleData: AttendanceRule): Observable<AttendanceRule> {
+    return this.http.post<AttendanceRule>(`${this.baseUrl}/attendance/rules`, ruleData);
+  }
+
+  getAttendanceRule(tenantId: string, ruleId: string): Observable<AttendanceRule> {
+    return this.http.get<AttendanceRule>(`${this.baseUrl}/attendance/rules/${ruleId}`);
+  }
+
+  listAttendanceRules(tenantId: string, page: number = 1, limit: number = 20): Observable<{ rules: AttendanceRule[], total: number }> {
+    return this.http.get<{ rules: AttendanceRule[], total: number }>(
+      `${this.baseUrl}/attendance/rules?page=${page}&limit=${limit}`
+    );
+  }
+
+  updateAttendanceRule(tenantId: string, ruleId: string, ruleData: AttendanceRule): Observable<AttendanceRule> {
+    return this.http.put<AttendanceRule>(`${this.baseUrl}/attendance/rules/${ruleId}`, ruleData);
+  }
+
+  deleteAttendanceRule(tenantId: string, ruleId: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/attendance/rules/${ruleId}`);
   }
 }

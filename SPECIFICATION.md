@@ -1,272 +1,181 @@
-# Attendance Management System - Specification
+# Attendance Management System Specification
 
 ## Overview
-This document specifies the complete attendance management system architecture, including backend Go services, Angular frontend, and Flutter mobile applications.
 
-## System Architecture
+The Attendance Management System is a comprehensive solution designed to handle employee attendance tracking, organization management, payroll processing, and leave management. This system provides a modular approach to manage all aspects of workforce management within an organization.
 
-### Backend (Go)
-- **Core Services**: gin-gonic/gin web framework
-- **Database**: PostgreSQL 16 with pgxpool driver
-- **Authentication**: Keycloak integration with JWT verification
-- **Modular Design**: Selective module loading system
-- **Event System**: Thread-safe in-memory pub/sub EventBus
+## Core Modules
 
-### Frontend (Angular)
-- **Framework**: Angular 18 with standalone components
-- **UI Library**: Angular Material with Material Design 3
-- **State Management**: Built-in services and HTTP interceptors
-- **Responsive Design**: Mobile-first approach
+### 1. Organization Management
+This module handles employee management and organizational policies.
 
-### Mobile (Flutter)
-- **Framework**: Flutter 3.x with Material 3
-- **Platforms**: Android and iOS support
-- **Biometric Integration**: Face and fingerprint scanning capabilities
-- **Offline Support**: Local caching for kiosk operations
+#### Features:
+- Employee creation and management
+- Organization policy settings (leave limits, overtime rules)
+- Salary structure definition and management
+- Employee onboarding workflow
+- HR letter generation (offer letters, appointment letters, etc.)
 
-## Detailed Implementation
+### 2. Attendance Tracking
+This module manages real-time attendance records and reporting.
 
-### Backend Modules
+#### Features:
+- Punch-in/punch-out functionality
+- Location-based tracking
+- Shift schedule management
+- Daily attendance reports
+- Overtime tracking
 
-#### 1. Core Module (`pkg/app`)
-- Module registry system with selective ResolveModules filter
-- Gin server builder implementation
-- Application setup and configuration
+### 3. Payroll Processing
+Handles salary calculations and payroll management.
 
-#### 2. Configuration Module (`pkg/config`)  
-- Typed environment configuration using caarlos0/env
-- Struct tags for environment variable parsing
-- Unit tests for config loading
+#### Features:
+- Salary record creation and management
+- Payroll summary generation
+- Tax bracket configuration
+- Net salary calculation
+- Payment date tracking
 
-#### 3. HTTP Extensions (`pkg/httpx`)
-- Generic BindJSON[T] function for JSON binding with RFC 7807 errors
-- JSON helper for sending responses
-- Error helper for RFC 7807 Problem Details format
-- JWT verification middleware with local JWKS cache
-- RequireRole function for role-based access control
-- OAuth2 token proxy handlers (login, refresh, logout)
+### 4. Leave Management
+Manages employee leave requests and approvals.
 
-#### 4. Database Layer (`pkg/db`)
-- PostgreSQL connection using pgxpool
-- Tenant transaction isolation helper
-- Schema-scoped goose migration runner placeholder
+#### Features:
+- Leave type configuration
+- Leave request submission
+- Approval workflow
+- Leave balance tracking
+- Leave report generation
 
-#### 5. Event System (`pkg/events`)
-- Thread-safe in-memory Pub/Sub EventBus
-- Event struct definition and HandlerFunc type
-- Bus interface with Publish/Subscribe methods
+### 5. User Management
+Handles authentication and user access control.
 
-### 6. Leave Management Module (`modules/leave`)
-- Employee leave request submission
-- HR approval workflow for leave requests
-- Leave type management (Casual, Sick, Earned, etc.)
-- Leave history tracking and reporting
-- Status tracking (PENDING, APPROVED, REJECTED)
+#### Features:
+- User registration and login
+- Role-based access control
+- Token management
+- Session handling
 
-### Frontend Applications
+## Technical Architecture
 
-#### Angular Employee Portal (`frontend/angular-app`)
-**Features:**
-- Login screen with form validation (TASK-16)
-- Employee dashboard with punch-in/out functionality (TASK-17)
-- Attendance history display
-- Responsive Material Design UI
+The system follows a modular monolith architecture with the following components:
 
-**Integration Points:**
-- `POST /auth/login` - Authentication
-- `POST /api/attendance/punch` - Record attendance
-- `GET /api/attendance/me` - Get employee records
-- `GET /api/attendance/reports` - Get attendance reports
+### Backend:
+- Built with Go 1.21
+- RESTful API using Gin framework
+- PostgreSQL database with proper migrations
+- Modular design with clearly separated concerns
+- Swagger documentation auto-generated
+- Structured into models.go and dto.go files for better organization
 
-#### Flutter Applications
+### Frontend:
+- Flutter-based mobile application for employee interaction
+- Web interface for administrators
+- Responsive design for multiple device types
 
-##### 1. User App (`frontend/userapp`)
-**Features:**
-- Login screen with Material 3 design (TASK-20)
-- Employee dashboard for attendance management (TASK-21)
-- Punch-in/out functionality
-- Attendance history view
-
-**Integration Points:**
-- Same API endpoints as Angular app
-
-##### 2. Kiosk App (`frontend/kioskapp`)
-**Features:**
-- Face recognition scanning interface (TASK-22)
-- Fingerprint scanning alternative (TASK-23)
-- Kiosk-specific workflow with real-time feedback
-- Biometric authentication support
-
-## API Endpoints
-
-### Authentication
-```
-POST /auth/login          # User login
-POST /auth/refresh        # Token refresh  
-POST /auth/logout         # User logout
-```
+## Key Capabilities
 
 ### Attendance Management
-```
-POST /api/attendance/punch  # Record punch-in/out
-GET /api/attendance/me      # Get current employee's records
-GET /api/attendance/reports # Get attendance reports
-```
+- Real-time attendance tracking with location data
+- Shift schedule management
+- Automatic calculation of working hours
+- Overtime tracking and reporting
 
-### Organization Management (Admin)
-```
-GET /api/organization/employees   # List employees
-POST /api/organization/employees  # Create employee
-```
+### Organization Management
+- Complete employee lifecycle management (onboarding, salary structure)
+- HR document generation
+- Policy configuration for organizational rules
 
-## Technical Requirements
+### Payroll Processing
+- Automated salary calculations
+- Tax bracket configuration
+- Payment tracking
+- Comprehensive payroll reports
 
-### Backend Dependencies
-- Go 1.21+
-- PostgreSQL 16
-- Keycloak 21+
-- gin-gonic/gin
-- jackc/pgx/v5
-- pressly/goose/v3
-- caarlos0/env
-- golang-jwt/jwt/v5
+### Leave Management
+- Flexible leave type definitions
+- Approval workflow with notifications
+- Leave balance management
+- Historical leave tracking
 
-### Frontend Dependencies
-- Angular 18
-- TypeScript
-- SCSS
-- Angular Material
+### User Management
+- Secure authentication and authorization
+- Role-based access control
+- Session management
 
-### Mobile Dependencies  
-- Flutter 3.x
-- Dart
-- Material 3 Design
-- camera plugin (for kiosk apps)
-- http client
+## Integration Points
 
-## Implementation Status
+### Keycloak Authentication
+- OAuth 2.0 based authentication
+- Tenant isolation for multi-tenant deployments
+- Role-based access control
 
-### ✅ Completed Tasks
-**Phase 1 - Backend Infrastructure (Tasks 01-07):**
-- Go workspace initialization with modules
-- Environment configuration loader
-- Gin request/response helpers  
-- Keycloak security implementation
-- Database connectivity and transactions
-- Event system implementation
-- Modular application framework
+### Database
+- PostgreSQL with proper indexing and relationships
+- Migration support for database schema changes
 
-**Phase 3 - Frontend Development (Tasks 15-17):**
-- Angular workspace with Material UI theme
-- Login screen implementation
-- Employee portal dashboard
+### External Services
+- HR document generation services
+- Notification systems for leave approvals and payroll processing
 
-**Phase 4 - Mobile Development (Tasks 19-23):**
-- Flutter project with Material 3 theme
-- User app login screen (TASK-20)
-- Employee dashboard structure (TASK-21)  
-- FaceScan kiosk workflow (TASK-22)
-- FingerScan kiosk workflow (TASK-23)
+## Security Features
 
-### 🔄 In Progress Tasks
-**Phase 2 - Module Development (Tasks 08-14):**
-- Organization module implementation
-- Attendance module with repository and business logic
-- Payroll module with calculation services
+- JWT-based authentication
+- Role-based access controls
+- Tenant isolation
+- Secure API endpoints
+- Data encryption where necessary
 
-## Deployment Structure
+## Performance Considerations
 
-### Docker Compose Services
-```
-postgres:16          # Database
-keycloak:latest      # Authentication server  
-backend:latest       # Go backend service
-frontend:latest      # Angular frontend (optional)
-mobile:latest        # Flutter apps (separate deployments)
-```
+- Optimized database queries with proper indexing
+- Caching strategies for frequently accessed data
+- Asynchronous processing for heavy operations
+- Scalable architecture supporting multiple tenants
 
-### Environment Variables
-```env
-DATABASE_URL=postgresql://user:pass@postgres:5432/attendance
-KEYCLOAK_ISSUER_URL=http://keycloak:8080/realms/attendance
-KEYCLOAK_CLIENT_ID=attendance-app
-KEYCLOAK_CLIENT_SECRET=secret
-HTTP_PORT=8080
-LOG_LEVEL=info
-```
+## Code Structure
 
-## Integration Documentation
+The backend code is organized into modules, each containing:
+- `models.go` - Database entity definitions
+- `dto.go` - Data Transfer Objects/Persistence Objects
+- `service.go` - Business logic implementation
+- `repository.go` - Data access layer
+- `module.go` - Module registration and routing
 
-### Authentication Flow
-1. User submits credentials to `/auth/login`
-2. Backend validates with Keycloak and returns JWT tokens
-3. Frontend stores tokens and includes in subsequent requests
-4. Tokens automatically refreshed when needed
+Each module follows a consistent pattern for better maintainability and scalability.
 
-### API Communication
-- All API calls use JSON format
-- Authentication header: `Authorization: Bearer <token>`
-- Error responses follow RFC 7807 Problem Details specification
-- All endpoints support CORS for cross-origin requests
+## Module Organization
 
-## Testing Strategy
+### Organization Module (`modules/organization`)
+- `models.go` - OrgPolicy, Employee, SalaryStructure structs
+- `dto.go` - CreateEmployeeRequest, OnboardEmployeeReq, Document, EmployeeWithDocuments, etc.
+- `service.go` - Business logic for employee management
+- `repository.go` - Database operations for organization data
+- `module.go` - Gin handlers and module registration
 
-### Backend Testing
-- Unit tests for all packages
-- Integration tests for database operations  
-- Mock tests for external services
-- API contract testing with Postman collections
+### Attendance Module (`modules/attendance`)
+- `models.go` - Punch, Shift, Report structs
+- `dto.go` - PunchRequest, PunchResponse, ReportRequest, ReportResponse structs
+- `service.go` - Business logic for attendance tracking
+- `repository.go` - Database operations for attendance data
+- `module.go` - Gin handlers and module registration
 
-### Frontend Testing
-- Component unit tests
-- E2E testing with Cypress
-- Responsive design testing
-- Authentication flow testing
+### Payroll Module (`modules/payroll`)
+- `models.go` - SalaryRecord, PayrollSummary, TaxBracket structs
+- `dto.go` - SalaryRecordRequest, PayrollSummaryRequest, PayrollReportRequest, PayrollReportResponse structs
+- `service.go` - Business logic for payroll processing
+- `repository.go` - Database operations for payroll data
+- `module.go` - Gin handlers and module registration
 
-### Mobile Testing
-- Unit tests for business logic
-- UI component testing
-- Device-specific testing
-- Biometric authentication testing
+### Leave Module (`modules/leave`)
+- `models.go` - LeaveRequest, LeaveType, LeaveBalance structs
+- `dto.go` - LeaveRequestDTO, LeaveResponseDTO, LeaveSummaryDTO structs
+- `service.go` - Business logic for leave management
+- `repository.go` - Database operations for leave data
+- `module.go` - Gin handlers and module registration
 
-## Next Steps
-
-1. Complete backend module implementations (organization, attendance, payroll)
-2. Implement full API endpoints for all modules
-3. Connect frontend and mobile applications to backend APIs
-4. Conduct end-to-end integration testing
-5. Finalize documentation and deployment scripts
-
-## Leave Management Module Implementation Details
-
-The leave management module implements the following functionality:
-
-1. **Employee Leave Requests**:
-   - Submit leave requests with start date, end date, type, and description
-   - View personal leave history
-   - Status tracking (PENDING, APPROVED, REJECTED)
-
-2. **HR Approval Workflow**:
-   - Approve/reject leave requests
-   - Role-based access control (HR_MANAGER, ORG_ADMIN)
-   - Automatic status updates with approval timestamps
-
-3. **Leave Types**:
-   - Casual Leave
-   - Sick Leave  
-   - Earned Leave
-   - Other custom leave types
-
-4. **Database Schema**:
-   - `leave_requests` table with all required fields
-   - Indexes for performance optimization
-   - Data validation constraints
-
-5. **Integration with System Requirements**:
-   - TC-13.1: Insufficient leave balance rejection (requires additional leave balance tracking)
-   - TC-13.2: Approved leave & on-duty attendance lock (requires integration with attendance system)
-
-6. **Testing Coverage**:
-   - Unit tests for all core functionality
-   - Integration tests for API endpoints
-   - Role-based access control verification
+### User Module (`modules/user`)
+- `models.go` - User, UserRole, UserPreference structs
+- `dto.go` - UserDTO, UserUpdateRequest, PreferenceDTO structs
+- `service.go` - Business logic for user management
+- `repository.go` - Database operations for user data
+- `module.go` - Gin handlers and module registration

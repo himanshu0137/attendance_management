@@ -45,7 +45,7 @@ func (m Module) Mount(core *app.CoreContext, rg *gin.RouterGroup) {
 	rg.POST("/punch", m.punch)
 	rg.GET("/me", m.me)
 	rg.GET("/reports", m.report)
-	
+
 	// Shift management endpoints (US-06)
 	shiftGroup := rg.Group("/shifts")
 	{
@@ -55,8 +55,8 @@ func (m Module) Mount(core *app.CoreContext, rg *gin.RouterGroup) {
 		shiftGroup.PUT("/:id", m.updateShift)
 		shiftGroup.DELETE("/:id", m.deleteShift)
 	}
-	
-	// Attendance rules endpoints (US-07, US-08) 
+
+	// Attendance rules endpoints (US-07, US-08)
 	ruleGroup := rg.Group("/rules")
 	{
 		ruleGroup.POST("", m.createAttendanceRule)
@@ -169,18 +169,18 @@ func (m Module) createShift(c *gin.Context) {
 		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
 		return
 	}
-	
+
 	req, ok := httpx.BindJSON[Shift](c)
 	if !ok {
 		return
 	}
-	
+
 	shift, err := m.service.CreateShift(c.Request.Context(), tenantID, req)
 	if err != nil {
 		httpx.Error(c, 500, "db_error", err.Error())
 		return
 	}
-	
+
 	httpx.JSON(c, 201, shift)
 }
 
@@ -200,28 +200,28 @@ func (m Module) listShifts(c *gin.Context) {
 		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
 		return
 	}
-	
+
 	page := 1
 	limit := 20
-	
+
 	if pageStr := c.Query("page"); pageStr != "" {
 		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
 			page = p
 		}
 	}
-	
+
 	if limitStr := c.Query("limit"); limitStr != "" {
 		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
 			limit = l
 		}
 	}
-	
+
 	shifts, total, err := m.service.ListShifts(c.Request.Context(), tenantID, page, limit)
 	if err != nil {
 		httpx.Error(c, 500, "db_error", err.Error())
 		return
 	}
-	
+
 	// Return paginated response
 	httpx.JSON(c, 200, gin.H{
 		"shifts": shifts,
@@ -246,15 +246,15 @@ func (m Module) getShift(c *gin.Context) {
 		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
 		return
 	}
-	
+
 	shiftID := c.Param("id")
-	
+
 	shift, err := m.service.GetShift(c.Request.Context(), tenantID, shiftID)
 	if err != nil {
 		httpx.Error(c, 500, "db_error", err.Error())
 		return
 	}
-	
+
 	httpx.JSON(c, 200, shift)
 }
 
@@ -274,20 +274,20 @@ func (m Module) updateShift(c *gin.Context) {
 		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
 		return
 	}
-	
+
 	shiftID := c.Param("id")
-	
+
 	req, ok := httpx.BindJSON[Shift](c)
 	if !ok {
 		return
 	}
-	
+
 	shift, err := m.service.UpdateShift(c.Request.Context(), tenantID, shiftID, req)
 	if err != nil {
 		httpx.Error(c, 500, "db_error", err.Error())
 		return
 	}
-	
+
 	httpx.JSON(c, 200, shift)
 }
 
@@ -306,15 +306,15 @@ func (m Module) deleteShift(c *gin.Context) {
 		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
 		return
 	}
-	
+
 	shiftID := c.Param("id")
-	
+
 	err := m.service.DeleteShift(c.Request.Context(), tenantID, shiftID)
 	if err != nil {
 		httpx.Error(c, 500, "db_error", err.Error())
 		return
 	}
-	
+
 	httpx.JSON(c, 204, gin.H{})
 }
 
@@ -333,18 +333,18 @@ func (m Module) createAttendanceRule(c *gin.Context) {
 		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
 		return
 	}
-	
+
 	req, ok := httpx.BindJSON[AttendanceRule](c)
 	if !ok {
 		return
 	}
-	
+
 	rule, err := m.service.CreateAttendanceRule(c.Request.Context(), tenantID, req)
 	if err != nil {
 		httpx.Error(c, 500, "db_error", err.Error())
 		return
 	}
-	
+
 	httpx.JSON(c, 201, rule)
 }
 
@@ -364,28 +364,28 @@ func (m Module) listAttendanceRules(c *gin.Context) {
 		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
 		return
 	}
-	
+
 	page := 1
 	limit := 20
-	
+
 	if pageStr := c.Query("page"); pageStr != "" {
 		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
 			page = p
 		}
 	}
-	
+
 	if limitStr := c.Query("limit"); limitStr != "" {
 		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
 			limit = l
 		}
 	}
-	
+
 	rules, total, err := m.service.ListAttendanceRules(c.Request.Context(), tenantID, page, limit)
 	if err != nil {
 		httpx.Error(c, 500, "db_error", err.Error())
 		return
 	}
-	
+
 	// Return paginated response
 	httpx.JSON(c, 200, gin.H{
 		"rules": rules,
@@ -410,15 +410,15 @@ func (m Module) getAttendanceRule(c *gin.Context) {
 		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
 		return
 	}
-	
+
 	ruleID := c.Param("id")
-	
+
 	rule, err := m.service.GetAttendanceRule(c.Request.Context(), tenantID, ruleID)
 	if err != nil {
 		httpx.Error(c, 500, "db_error", err.Error())
 		return
 	}
-	
+
 	httpx.JSON(c, 200, rule)
 }
 
@@ -438,20 +438,20 @@ func (m Module) updateAttendanceRule(c *gin.Context) {
 		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
 		return
 	}
-	
+
 	ruleID := c.Param("id")
-	
+
 	req, ok := httpx.BindJSON[AttendanceRule](c)
 	if !ok {
 		return
 	}
-	
+
 	rule, err := m.service.UpdateAttendanceRule(c.Request.Context(), tenantID, ruleID, req)
 	if err != nil {
 		httpx.Error(c, 500, "db_error", err.Error())
 		return
 	}
-	
+
 	httpx.JSON(c, 200, rule)
 }
 
@@ -470,15 +470,15 @@ func (m Module) deleteAttendanceRule(c *gin.Context) {
 		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
 		return
 	}
-	
+
 	ruleID := c.Param("id")
-	
+
 	err := m.service.DeleteAttendanceRule(c.Request.Context(), tenantID, ruleID)
 	if err != nil {
 		httpx.Error(c, 500, "db_error", err.Error())
 		return
 	}
-	
+
 	httpx.JSON(c, 204, gin.H{})
 }
 

@@ -1,0 +1,68 @@
+<div class="employee-form-container">
+  <h2>Create Employee</h2>
+  <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()" class="employee-form">
+    <div class="form-row">
+      <mat-form-field appearance="fill">
+        <mat-label>Tenant ID</mat-label>
+        <input matInput formControlName="tenantId" required>
+      </mat-form-field>
+      
+      <mat-form-field appearance="fill">
+        <mat-label>First Name</mat-label>
+        <input matInput formControlName="firstName" required>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field appearance="fill">
+        <mat-label>Last Name</mat-label>
+        <input matInput formControlName="lastName" required>
+      </mat-form-field>
+      
+      <mat-form-field appearance="fill">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" type="email" required>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field appearance="fill">
+        <mat-label>Employee Code</mat-label>
+        <input matInput formControlName="employeeCode" required>
+      </mat-form-field>
+      
+      <mat-form-field appearance="fill">
+        <mat-label>Designation</mat-label>
+        <input matInput formControlName="designation" required>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field appearance="fill">
+        <mat-label>Department</mat-label>
+        <input matInput formControlName="department" required>
+      </mat-form-field>
+      
+      <mat-form-field appearance="fill">
+        <mat-label>Manager ID (Optional)</mat-label>
+        <input matInput formControlName="managerId">
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field appearance="fill">
+        <mat-label>Branch ID (Optional)</mat-label>
+        <input matInput formControlName="branchId">
+      </mat-form-field>
+    </div>
+
+    <button 
+      type="submit" 
+      mat-raised-button 
+      color="primary" 
+      [disabled]="employeeForm.invalid || isSubmitting"
+      class="submit-btn">
+      {{ isSubmitting ? 'Creating...' : 'Create Employee' }}
+    </button>
+  </form>
+</div>

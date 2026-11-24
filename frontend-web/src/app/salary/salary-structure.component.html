@@ -1,0 +1,111 @@
+<div class="salary-container">
+  <h2>Salary Structure Management</h2>
+  
+  <div class="form-section">
+    <h3>Create/Update Salary Structure</h3>
+    <form [formGroup]="salaryForm" (ngSubmit)="onSubmit()" class="salary-form">
+      <div class="form-row">
+        <mat-form-field appearance="fill">
+          <mat-label>Tenant ID</mat-label>
+          <input matInput formControlName="tenantId" required>
+        </mat-form-field>
+        
+        <mat-form-field appearance="fill">
+          <mat-label>Employee ID</mat-label>
+          <input matInput formControlName="employeeId" required>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="fill">
+          <mat-label>Pay Basis</mat-label>
+          <mat-select formControlName="payBasis">
+            <mat-option value="monthly">Monthly</mat-option>
+            <mat-option value="daily">Daily</mat-option>
+          </mat-select>
+        </mat-form-field>
+        
+        <mat-form-field appearance="fill">
+          <mat-label>Effective Date</mat-label>
+          <input matInput formControlName="effectiveDate" type="date" required>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="fill">
+          <mat-label>Basic Salary</mat-label>
+          <input matInput formControlName="basic" type="number" required>
+        </mat-form-field>
+        
+        <mat-form-field appearance="fill">
+          <mat-label>HRA</mat-label>
+          <input matInput formControlName="hra" type="number">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="fill">
+          <mat-label>DA</mat-label>
+          <input matInput formControlName="da" type="number">
+        </mat-form-field>
+        
+        <mat-form-field appearance="fill">
+          <mat-label>Conveyance</mat-label>
+          <input matInput formControlName="conveyance" type="number">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="fill">
+          <mat-label>Special Allowance</mat-label>
+          <input matInput formControlName="specialAllowance" type="number">
+        </mat-form-field>
+        
+        <mat-form-field appearance="fill">
+          <mat-label>Medical Allowance</mat-label>
+          <input matInput formControlName="medicalAllowance" type="number">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="fill">
+          <mat-label>Bonus</mat-label>
+          <input matInput formControlName="bonus" type="number">
+        </mat-form-field>
+        
+        <mat-form-field appearance="fill">
+          <mat-label>Overtime Rate</mat-label>
+          <input matInput formControlName="overtimeRate" type="number">
+        </mat-form-field>
+      </div>
+
+      <div class="form-actions">
+        <button 
+          type="submit" 
+          mat-raised-button 
+          color="primary" 
+          [disabled]="salaryForm.invalid || isSubmitting"
+          class="submit-btn">
+          {{ isSubmitting ? 'Saving...' : 'Save Salary Structure' }}
+        </button>
+        
+        <button 
+          type="button"
+          mat-button 
+          (click)="getSalaryStructure()"
+          class="get-btn">
+          Get Existing
+        </button>
+        
+        <button 
+          type="button"
+          mat-button 
+          (click)="updateSalaryStructure()"
+          [disabled]="!tenantId || !employeeId"
+          class="update-btn">
+          Update
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,47 +1,61 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ApiBaseService } from './api-base.service';
+import { StatutoryCompliance, EmployeeStatutoryDeduction } from '../shared/models/statutory.model';
 
-// Money is the integer-based currency amount returned by a slip.
-export interface Money {
-  amount: string;
-}
-
-// One payable day in a salary slip.
-export interface PayDay {
-  date: string;
-  minutes: number;
-}
-
-// Generated monthly salary slip.
-export interface SalarySlip {
-  id: string;
-  tenant_id: string;
-  employee_id: string;
-  period: string;
-  base_salary: Money;
-  days: PayDay[];
-}
-
-@Injectable({ providedIn: 'root' })
-export class PayrollService {
-  constructor(private http: HttpClient) {}
-
-  // Generates and persists a prorated monthly salary slip.
-  generateSlip(employeeId: string, month: number, year: number): Observable<SalarySlip> {
-    return this.http.post<SalarySlip>('/api/payroll/slips/generate', {
-      employee_id: employeeId,
-      month,
-      year,
-    });
+@Injectable({
+  providedIn: 'root'
+})
+export class PayrollService extends ApiBaseService {
+  
+  constructor(protected http: HttpClient) {
+    super(http);
   }
 
-  // Returns the tenant's generated salary slips.
-  getSlips(tenantId: string): Observable<SalarySlip[]> {
-    return this.http.get<SalarySlip[]>(`/api/payroll/slips`);
+  // Statutory Compliance
+  createStatutoryCompliance(tenantId: string, complianceData: StatutoryCompliance): Observable<StatutoryCompliance> {
+    return this.http.post<StatutoryCompliance>(`${this.baseUrl}/payroll/statutory`, complianceData);
   }
 
-  getMySlips(tenantId: string): Observable<SalarySlip[]> {
-    return this.http.get<SalarySlip[]>(`/api/payroll/slips/me`);
+  getStatutoryCompliance(tenantId: string, complianceId: string): Observable<StatutoryCompliance> {
+    return this.http.get<StatutoryCompliance>(`${this.baseUrl}/payroll/statutory/${complianceId}`);
+  }
+
+  listStatutoryCompliance(tenantId: string, page: number = 1, limit: number = 20): Observable<{ compliances: StatutoryCompliance[], total: number }> {
+    return this.http.get<{ compliances: StatutoryCompliance[], total: number }>(
+      `${this.baseUrl}/payroll/statutory?page=${page}&limit=${limit}`
+    );
+  }
+
+  updateStatutoryCompliance(tenantId: string, complianceId: string, complianceData: StatutoryCompliance): Observable<StatutoryCompliance> {
+    return this.http.put<StatutoryCompliance>(`${this.baseUrl}/payroll/statutory/${complianceId}`, complianceData);
+  }
+
+  deleteStatutoryCompliance(tenantId: string, complianceId: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/payroll/statutory/${complianceId}`);
+  }
+
+  // Employee Statutory Deductions
+  createEmployeeStatutoryDeduction(employeeId: string, deductionData: EmployeeStatutoryDeduction): Observable<EmployeeStatutoryDeduction> {
+    return this.http.post<EmployeeStatutoryDeduction>(`${this.baseUrl}/payroll/employee/${employeeId}/statutory-deductions`, deductionData);
+  }
+
+  getEmployeeStatutoryDeduction(employeeId: string, deductionId: string): Observable<EmployeeStatutoryDeduction> {
+    return this.http.get<EmployeeStatutoryDeduction>(`${this.baseUrl}/payroll/employee/${employeeId}/statutory-deductions/${deductionId}`);
+  }
+
+  listEmployeeStatutoryDeductions(employeeId: string, page: number = 1, limit: number = 20): Observable<{ deductions: EmployeeStatutoryDeduction[], total: number }> {
+    return this.http.get<{ deductions: EmployeeStatutoryDeduction[], total: number }>(
+      `${this.baseUrl}/payroll/employee/${employeeId}/statutory-deductions?page=${page}&limit=${limit}`
+    );
+  }
+
+  updateEmployeeStatutoryDeduction(employeeId: string, deductionId: string, deductionData: EmployeeStatutoryDeduction): Observable<EmployeeStatutoryDeduction> {
+    return this.http.put<EmployeeStatutoryDeduction>(`${this.baseUrl}/payroll/employee/${employeeId}/statutory-deductions/${deductionId}`, deductionData);
+  }
+
+  deleteEmployeeStatutoryDeduction(employeeId: string, deductionId: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/payroll/employee/${employeeId}/statutory-deductions/${deductionId}`);
   }
 }

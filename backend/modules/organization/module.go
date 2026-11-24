@@ -9,9 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"hunrx.com/attendance_management/pkg/app"
-	"hunrx.com/attendance_management/pkg/db"
-	"hunrx.com/attendance_management/pkg/httpx"
+	"attendance_management/pkg/app"
+	"attendance_management/pkg/db"
+	"attendance_management/pkg/httpx"
 )
 
 // init registers the module with the core.
@@ -48,7 +48,7 @@ func (m Module) Mount(core *app.CoreContext, rg *gin.RouterGroup) {
 	rg.POST("/:tenant_id/policies", m.setPolicy)
 	rg.GET("/:tenant_id/employees", m.listEmployees)
 	rg.POST("/:tenant_id/employees", m.createEmployee)
-	
+
 	// Employee Lifecycle Management endpoints (US-03, US-04, US-05)
 	rg.POST("/:tenant_id/employees/:employee_id/onboard", m.onboardEmployee)
 	rg.GET("/:tenant_id/employees/:employee_id/salary-structure", m.getSalaryStructure)
@@ -154,10 +154,10 @@ func (m Module) createEmployee(c *gin.Context) {
 	if !ok {
 		return
 	}
-	
+
 	// Set the tenant ID for the request
 	req.TenantID = tenantID
-	
+
 	emp, err := m.service.CreateEmployee(c.Request.Context(), req)
 	if err != nil {
 		httpx.Error(c, 500, "db_error", err.Error())
@@ -183,26 +183,26 @@ func (m Module) onboardEmployee(c *gin.Context) {
 		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
 		return
 	}
-	
+
 	employeeIDStr := c.Param("employee_id")
 	employeeID, err := uuid.Parse(employeeIDStr)
 	if err != nil {
 		httpx.Error(c, 400, "invalid_employee_id", "Invalid employee ID format")
 		return
 	}
-	
+
 	req, ok := httpx.BindJSON[OnboardEmployeeReq](c)
 	if !ok {
 		return
 	}
-	
+
 	// Call service method to onboard employee
 	result, err := m.service.OnboardEmployee(c.Request.Context(), employeeID, tenantID, req)
 	if err != nil {
 		httpx.Error(c, 500, "onboarding_error", err.Error())
 		return
 	}
-	
+
 	httpx.JSON(c, 200, result)
 }
 
@@ -222,20 +222,20 @@ func (m Module) getSalaryStructure(c *gin.Context) {
 		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
 		return
 	}
-	
+
 	employeeIDStr := c.Param("employee_id")
 	employeeID, err := uuid.Parse(employeeIDStr)
 	if err != nil {
 		httpx.Error(c, 400, "invalid_employee_id", "Invalid employee ID format")
 		return
 	}
-	
+
 	result, err := m.service.GetSalaryStructure(c.Request.Context(), employeeID, tenantID)
 	if err != nil {
 		httpx.Error(c, 500, "salary_structure_error", err.Error())
 		return
 	}
-	
+
 	httpx.JSON(c, 200, result)
 }
 
@@ -256,25 +256,25 @@ func (m Module) createSalaryStructure(c *gin.Context) {
 		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
 		return
 	}
-	
+
 	employeeIDStr := c.Param("employee_id")
 	employeeID, err := uuid.Parse(employeeIDStr)
 	if err != nil {
 		httpx.Error(c, 400, "invalid_employee_id", "Invalid employee ID format")
 		return
 	}
-	
+
 	req, ok := httpx.BindJSON[CreateSalaryStructureRequest](c)
 	if !ok {
 		return
 	}
-	
+
 	result, err := m.service.CreateSalaryStructure(c.Request.Context(), employeeID, tenantID, req)
 	if err != nil {
 		httpx.Error(c, 500, "salary_structure_error", err.Error())
 		return
 	}
-	
+
 	httpx.JSON(c, 201, result)
 }
 
@@ -295,25 +295,25 @@ func (m Module) updateSalaryStructure(c *gin.Context) {
 		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
 		return
 	}
-	
+
 	employeeIDStr := c.Param("employee_id")
 	employeeID, err := uuid.Parse(employeeIDStr)
 	if err != nil {
 		httpx.Error(c, 400, "invalid_employee_id", "Invalid employee ID format")
 		return
 	}
-	
+
 	req, ok := httpx.BindJSON[CreateSalaryStructureRequest](c)
 	if !ok {
 		return
 	}
-	
+
 	result, err := m.service.UpdateSalaryStructure(c.Request.Context(), employeeID, tenantID, req)
 	if err != nil {
 		httpx.Error(c, 500, "salary_structure_error", err.Error())
 		return
 	}
-	
+
 	httpx.JSON(c, 200, result)
 }
 
@@ -334,32 +334,32 @@ func (m Module) generateHRLetter(c *gin.Context) {
 		httpx.Error(c, 401, "missing_tenant", "no tenant_id in token")
 		return
 	}
-	
+
 	employeeIDStr := c.Param("employee_id")
 	employeeID, err := uuid.Parse(employeeIDStr)
 	if err != nil {
 		httpx.Error(c, 400, "invalid_employee_id", "Invalid employee ID format")
 		return
 	}
-	
+
 	letterType := c.Param("letter_type")
-	
+
 	// Call service method to generate HR letter
 	result, err := m.service.GenerateHRLetter(c.Request.Context(), employeeID, tenantID, letterType)
 	if err != nil {
 		httpx.Error(c, 500, "letter_generation_error", err.Error())
 		return
 	}
-	
+
 	httpx.JSON(c, 200, result)
 }
 
 // OnboardEmployeeReq represents the request for employee onboarding
 type OnboardEmployeeReq struct {
-	Documents []Document `json:"documents"`
-	JoiningDate time.Time `json:"joining_date"`
-	Position    string `json:"position"`
-	Department  string `json:"department"`
+	Documents   []Document `json:"documents"`
+	JoiningDate time.Time  `json:"joining_date"`
+	Position    string     `json:"position"`
+	Department  string     `json:"department"`
 }
 
 // newKeycloak adapts the core KeycloakConfig into the org KeycloakClient.

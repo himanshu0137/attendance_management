@@ -1,26 +1,15 @@
 import 'package:flutter/material.dart';
+import 'employee_portal_screen.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
-
-  @override
-  void dispose() {
-    _usernameController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final _formKey = GlobalKey<FormState>();
+    final _usernameController = TextEditingController();
+    final _passwordController = TextEditingController();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Employee Login'),
@@ -77,9 +66,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      // Login logic would go here
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Login in progress...')),
+                      // Navigate to employee portal after successful login
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const EmployeePortalScreen(),
+                        ),
                       );
                     }
                   },

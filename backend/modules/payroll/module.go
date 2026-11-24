@@ -6,9 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"hunrx.com/attendance_management/pkg/app"
-	"hunrx.com/attendance_management/pkg/db"
-	"hunrx.com/attendance_management/pkg/httpx"
+	"attendance_management/pkg/app"
+	"attendance_management/pkg/db"
+	"attendance_management/pkg/httpx"
 )
 
 // init registers the module with the core.

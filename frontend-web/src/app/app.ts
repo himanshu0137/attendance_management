@@ -10,5 +10,5 @@ import { NavComponent } from './core/nav.component';
   styleUrl: './app.scss'
 })
 export class App {
-  protected readonly title = signal('attendance_mangement');
+  protected readonly title = signal('Attendance Management System');
 }

@@ -9,15 +9,15 @@ import (
 type PunchMethod string
 
 const (
-	FacescanKiosk PunchMethod = "FACESCAN_KIOSK"
+	FacescanKiosk   PunchMethod = "FACESCAN_KIOSK"
 	FingerScanKiosk PunchMethod = "FINGERSCAN_KIOSK"
-	WebLogin      PunchMethod = "WEB_LOGIN"
-	MobileLogin   PunchMethod = "MOBILE_LOGIN"
+	WebLogin        PunchMethod = "WEB_LOGIN"
+	MobileLogin     PunchMethod = "MOBILE_LOGIN"
 )
 
 // TenantPolicy is the per-tenant attendance policy held locally.
 type TenantPolicy struct {
-	Methods   []string `json:"methods"`
+	Methods    []string  `json:"methods"`
 	ShiftStart time.Time `json:"shift_start_time"`
 	ShiftEnd   time.Time `json:"shift_end_time"`
 }
@@ -47,12 +47,12 @@ var ErrOutsideShift = errors.New("attendance: punch outside the configured shift
 
 // PunchLog is a raw punch event.
 type PunchLog struct {
-	ID       int64     `json:"id"`
-	TenantID string    `json:"tenant_id"`
-	EmployeeID string   `json:"employee_id"`
-	Method   PunchMethod `json:"method"`
-	Start    time.Time `json:"start"`
-	End      *time.Time `json:"end"`
+	ID         int64       `json:"id"`
+	TenantID   string      `json:"tenant_id"`
+	EmployeeID string      `json:"employee_id"`
+	Method     PunchMethod `json:"method"`
+	Start      time.Time   `json:"start"`
+	End        *time.Time  `json:"end"`
 }
 
 // Report is the aggregated attendance for a date range.
@@ -76,14 +76,14 @@ type Shift struct {
 
 // AttendanceRule represents an attendance policy rule
 type AttendanceRule struct {
-	ID          string    `json:"id"`
-	TenantID    string    `json:"tenant_id"`
-	Name        string    `json:"rule_name"`
-	Description string    `json:"description"`
-	RuleType    string    `json:"rule_type"` // e.g., "late_arrival", "early_departure", "overtime"
+	ID          string                 `json:"id"`
+	TenantID    string                 `json:"tenant_id"`
+	Name        string                 `json:"rule_name"`
+	Description string                 `json:"description"`
+	RuleType    string                 `json:"rule_type"` // e.g., "late_arrival", "early_departure", "overtime"
 	Condition   map[string]interface{} `json:"condition"` // flexible conditions for the rule
 	Action      map[string]interface{} `json:"action"`    // action to take when rule is triggered
-	IsActive    bool      `json:"is_active"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	IsActive    bool                   `json:"is_active"`
+	CreatedAt   time.Time              `json:"created_at"`
+	UpdatedAt   time.Time              `json:"updated_at"`
 }

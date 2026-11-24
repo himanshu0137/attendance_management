@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"hunrx.com/attendance_management/pkg/db"
+	"attendance_management/pkg/db"
 )
 
 // CoreContext holds the core application context.
@@ -59,3 +59,8 @@ func ResolveModules(requested []string) ([]FeatureModule, error) {
 
 // Core modules registry.
 var modules []FeatureModule
+
+// GetModules returns the list of registered modules.
+func GetModules() []FeatureModule {
+	return modules
+}

@@ -7,6 +7,13 @@ import (
 	"os/signal"
 	"syscall"
 
+	// Import all modules to ensure they're initialized
+	_ "hunrx.com/attendance_management/modules/attendance"
+	_ "hunrx.com/attendance_management/modules/leave"
+	_ "hunrx.com/attendance_management/modules/organization"
+	_ "hunrx.com/attendance_management/modules/payroll"
+	_ "hunrx.com/attendance_management/modules/user"
+
 	"hunrx.com/attendance_management/pkg/app"
 	"hunrx.com/attendance_management/pkg/config"
 	"hunrx.com/attendance_management/pkg/db"
@@ -15,7 +22,7 @@ import (
 func main() {
 	// Load configuration
 	cfg := config.Load()
-	
+
 	// Set up logging
 	var logLevel slog.Level
 	switch cfg.LogLevel {
@@ -30,7 +37,7 @@ func main() {
 	default:
 		logLevel = slog.LevelInfo
 	}
-	
+
 	slog.SetLogLoggerLevel(logLevel)
 
 	// Create context with cancellation

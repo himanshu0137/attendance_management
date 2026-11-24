@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"hunrx.com/attendance_management/backend/pkg/config"
-	"hunrx.com/attendance_management/backend/pkg/httpx"
+	"attendance_management/backend/pkg/config"
+	"attendance_management/backend/pkg/httpx"
 )
 
 type Module struct {
