@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type Service struct {
@@ -62,24 +62,24 @@ func (s *Service) ListLeaveRequests(ctx context.Context, tenantID, status string
 // ApproveLeaveRequest approves a leave request
 func (s *Service) ApproveLeaveRequest(ctx context.Context, id uuid.UUID, approvedBy string) error {
 	approvedAt := time.Now()
-	
+
 	err := s.repo.UpdateLeaveStatus(ctx, id, "APPROVED", &approvedBy, &approvedAt)
 	if err != nil {
 		return err
 	}
-	
+
 	return nil
 }
 
 // RejectLeaveRequest rejects a leave request
 func (s *Service) RejectLeaveRequest(ctx context.Context, id uuid.UUID, rejectedBy string) error {
 	rejectedAt := time.Now()
-	
+
 	err := s.repo.UpdateLeaveStatus(ctx, id, "REJECTED", &rejectedBy, &rejectedAt)
 	if err != nil {
 		return err
 	}
-	
+
 	return nil
 }
 

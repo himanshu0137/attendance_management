@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS attendance.organization_policies (
 
 CREATE TABLE IF NOT EXISTS attendance.employees (
 	tenant_id TEXT NOT NULL,
-	keycloak_sub UUID NOT NULL,
+	keycloak_id UUID NOT NULL,
 	role TEXT NOT NULL,
 	first_name TEXT,
 	last_name TEXT,
@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS attendance.employees (
 	status TEXT DEFAULT 'active',
 	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 	updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-	PRIMARY KEY (tenant_id, keycloak_sub),
+	PRIMARY KEY (tenant_id, keycloak_id),
 	FOREIGN KEY (tenant_id) REFERENCES attendance.organization_policies(tenant_id) ON DELETE CASCADE
 );
 
@@ -248,7 +248,7 @@ CREATE INDEX IF NOT EXISTS idx_employee_statutory_deductions_statutory_id ON att
 CREATE TABLE IF NOT EXISTS attendance.users (
     tenant_id UUID NOT NULL,
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    keycloak_sub VARCHAR(255) NOT NULL,
+    keycloak_id VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
     phone VARCHAR(50),
@@ -257,8 +257,8 @@ CREATE TABLE IF NOT EXISTS attendance.users (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     
-    -- Ensure tenant_id and keycloak_sub combination is unique
-    UNIQUE(tenant_id, keycloak_sub)
+    -- Ensure tenant_id and keycloak_id combination is unique
+    UNIQUE(tenant_id, keycloak_id)
 );
 
 -- Preferences table

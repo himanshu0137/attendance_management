@@ -5,8 +5,9 @@ import (
 	"regexp"
 	"time"
 
+	"uuid"
+
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"hunrx.com/attendance_management/pkg/app"
 	"hunrx.com/attendance_management/pkg/httpx"

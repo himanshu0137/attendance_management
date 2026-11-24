@@ -4,7 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
+	"uuid"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"hunrx.com/attendance_management/pkg/db"
@@ -139,7 +140,7 @@ func (r *Repository) CreateOrganization(ctx context.Context, id uuid.UUID, req C
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &org, nil
 }
 
@@ -159,7 +160,7 @@ func (r *Repository) GetOrganization(ctx context.Context, id uuid.UUID) (*Organi
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &org, nil
 }
 
@@ -186,7 +187,7 @@ func (r *Repository) UpdateOrganization(ctx context.Context, id uuid.UUID, req U
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &org, nil
 }
 
@@ -216,12 +217,12 @@ func (r *Repository) CreateBranch(ctx context.Context, id uuid.UUID, req CreateB
 		`INSERT INTO org.branches (id, name, description, latitude, longitude, radius_meters, ssid_list, bssid_list, tenant_id, created_at)
 		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id, name, description, latitude, longitude, radius_meters, ssid_list, bssid_list, tenant_id, created_at`,
 		id, req.Name, req.Description, req.Latitude, req.Longitude, req.RadiusMeters, req.SSIDList, req.BSSIDList, req.TenantID, time.Now()).Scan(
-		&branch.ID, &branch.Name, &branch.Description, &branch.Latitude, &branch.Longitude, &branch.RadiusMeters, 
+		&branch.ID, &branch.Name, &branch.Description, &branch.Latitude, &branch.Longitude, &branch.RadiusMeters,
 		&branch.SSIDList, &branch.BSSIDList, &branch.TenantID, &branch.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &branch, nil
 }
 
@@ -234,7 +235,7 @@ func (r *Repository) ListBranches(ctx context.Context, tenantID string, page, li
 	defer release()
 
 	offset := (page - 1) * limit
-	
+
 	rows, err := conn.Query(ctx,
 		`SELECT id, name, description, latitude, longitude, radius_meters, ssid_list, bssid_list, tenant_id, created_at
 		 FROM org.branches WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
@@ -243,18 +244,18 @@ func (r *Repository) ListBranches(ctx context.Context, tenantID string, page, li
 		return nil, 0, err
 	}
 	defer rows.Close()
-	
+
 	var branches []*Branch
 	for rows.Next() {
 		var branch Branch
-		err = rows.Scan(&branch.ID, &branch.Name, &branch.Description, &branch.Latitude, &branch.Longitude, 
+		err = rows.Scan(&branch.ID, &branch.Name, &branch.Description, &branch.Latitude, &branch.Longitude,
 			&branch.RadiusMeters, &branch.SSIDList, &branch.BSSIDList, &branch.TenantID, &branch.CreatedAt)
 		if err != nil {
 			return nil, 0, err
 		}
 		branches = append(branches, &branch)
 	}
-	
+
 	// Get total count
 	var total int
 	err = conn.QueryRow(ctx,
@@ -262,7 +263,7 @@ func (r *Repository) ListBranches(ctx context.Context, tenantID string, page, li
 	if err != nil {
 		return nil, 0, err
 	}
-	
+
 	return branches, total, nil
 }
 
@@ -278,12 +279,12 @@ func (r *Repository) GetBranch(ctx context.Context, id uuid.UUID, tenantID strin
 	err = conn.QueryRow(ctx,
 		`SELECT id, name, description, latitude, longitude, radius_meters, ssid_list, bssid_list, tenant_id, created_at
 		 FROM org.branches WHERE id = $1 AND tenant_id = $2`, id, tenantID).Scan(
-		&branch.ID, &branch.Name, &branch.Description, &branch.Latitude, &branch.Longitude, 
+		&branch.ID, &branch.Name, &branch.Description, &branch.Latitude, &branch.Longitude,
 		&branch.RadiusMeters, &branch.SSIDList, &branch.BSSIDList, &branch.TenantID, &branch.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &branch, nil
 }
 
@@ -306,12 +307,12 @@ func (r *Repository) UpdateBranch(ctx context.Context, id uuid.UUID, req UpdateB
 			bssid_list = COALESCE($7, bssid_list)
 			WHERE id = $8 RETURNING id, name, description, latitude, longitude, radius_meters, ssid_list, bssid_list, tenant_id, created_at`,
 		req.Name, req.Description, req.Latitude, req.Longitude, req.RadiusMeters, req.SSIDList, req.BSSIDList, id).Scan(
-		&branch.ID, &branch.Name, &branch.Description, &branch.Latitude, &branch.Longitude, 
+		&branch.ID, &branch.Name, &branch.Description, &branch.Latitude, &branch.Longitude,
 		&branch.RadiusMeters, &branch.SSIDList, &branch.BSSIDList, &branch.TenantID, &branch.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &branch, nil
 }
 
@@ -341,12 +342,12 @@ func (r *Repository) CreateEmployee(ctx context.Context, id uuid.UUID, req Creat
 		`INSERT INTO org.employees (id, first_name, last_name, email, employee_code, designation, department, manager_id, branch_id, tenant_id, created_at)
 		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id, first_name, last_name, email, employee_code, designation, department, manager_id, branch_id, tenant_id, created_at`,
 		id, req.FirstName, req.LastName, req.Email, req.EmployeeCode, req.Designation, req.Department, req.ManagerID, req.BranchID, req.TenantID, time.Now()).Scan(
-		&emp.ID, &emp.FirstName, &emp.LastName, &emp.Email, &emp.EmployeeCode, &emp.Designation, &emp.Department, 
+		&emp.ID, &emp.FirstName, &emp.LastName, &emp.Email, &emp.EmployeeCode, &emp.Designation, &emp.Department,
 		&emp.ManagerID, &emp.BranchID, &emp.TenantID, &emp.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &emp, nil
 }
 
@@ -359,7 +360,7 @@ func (r *Repository) ListEmployees(ctx context.Context, tenantID string, page, l
 	defer release()
 
 	offset := (page - 1) * limit
-	
+
 	rows, err := conn.Query(ctx,
 		`SELECT id, first_name, last_name, email, employee_code, designation, department, manager_id, branch_id, tenant_id, created_at
 		 FROM org.employees WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
@@ -368,18 +369,18 @@ func (r *Repository) ListEmployees(ctx context.Context, tenantID string, page, l
 		return nil, 0, err
 	}
 	defer rows.Close()
-	
+
 	var employees []*Employee
 	for rows.Next() {
 		var emp Employee
-		err = rows.Scan(&emp.ID, &emp.FirstName, &emp.LastName, &emp.Email, &emp.EmployeeCode, &emp.Designation, 
+		err = rows.Scan(&emp.ID, &emp.FirstName, &emp.LastName, &emp.Email, &emp.EmployeeCode, &emp.Designation,
 			&emp.Department, &emp.ManagerID, &emp.BranchID, &emp.TenantID, &emp.CreatedAt)
 		if err != nil {
 			return nil, 0, err
 		}
 		employees = append(employees, &emp)
 	}
-	
+
 	// Get total count
 	var total int
 	err = conn.QueryRow(ctx,
@@ -387,7 +388,7 @@ func (r *Repository) ListEmployees(ctx context.Context, tenantID string, page, l
 	if err != nil {
 		return nil, 0, err
 	}
-	
+
 	return employees, total, nil
 }
 
@@ -403,12 +404,12 @@ func (r *Repository) GetEmployee(ctx context.Context, id uuid.UUID, tenantID str
 	err = conn.QueryRow(ctx,
 		`SELECT id, first_name, last_name, email, employee_code, designation, department, manager_id, branch_id, tenant_id, created_at
 		 FROM org.employees WHERE id = $1 AND tenant_id = $2`, id, tenantID).Scan(
-		&emp.ID, &emp.FirstName, &emp.LastName, &emp.Email, &emp.EmployeeCode, &emp.Designation, 
+		&emp.ID, &emp.FirstName, &emp.LastName, &emp.Email, &emp.EmployeeCode, &emp.Designation,
 		&emp.Department, &emp.ManagerID, &emp.BranchID, &emp.TenantID, &emp.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &emp, nil
 }
 
@@ -432,12 +433,12 @@ func (r *Repository) UpdateEmployee(ctx context.Context, id uuid.UUID, req Updat
 			branch_id = COALESCE($8, branch_id)
 			WHERE id = $9 RETURNING id, first_name, last_name, email, employee_code, designation, department, manager_id, branch_id, tenant_id, created_at`,
 		req.FirstName, req.LastName, req.Email, req.EmployeeCode, req.Designation, req.Department, req.ManagerID, req.BranchID, id).Scan(
-		&emp.ID, &emp.FirstName, &emp.LastName, &emp.Email, &emp.EmployeeCode, &emp.Designation, 
+		&emp.ID, &emp.FirstName, &emp.LastName, &emp.Email, &emp.EmployeeCode, &emp.Designation,
 		&emp.Department, &emp.ManagerID, &emp.BranchID, &emp.TenantID, &emp.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &emp, nil
 }
 
@@ -466,12 +467,12 @@ func (r *Repository) GetEmployeeByCode(ctx context.Context, tenantID, employeeCo
 	err = conn.QueryRow(ctx,
 		`SELECT id, first_name, last_name, email, employee_code, designation, department, manager_id, branch_id, tenant_id, created_at
 		 FROM org.employees WHERE employee_code = $1 AND tenant_id = $2`, employeeCode, tenantID).Scan(
-		&emp.ID, &emp.FirstName, &emp.LastName, &emp.Email, &emp.EmployeeCode, &emp.Designation, 
+		&emp.ID, &emp.FirstName, &emp.LastName, &emp.Email, &emp.EmployeeCode, &emp.Designation,
 		&emp.Department, &emp.ManagerID, &emp.BranchID, &emp.TenantID, &emp.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &emp, nil
 }
 
@@ -488,14 +489,14 @@ func (r *Repository) CreateEmployeeWithDocuments(ctx context.Context, id uuid.UU
 		`INSERT INTO org.employees (id, first_name, last_name, email, employee_code, designation, department, manager_id, branch_id, tenant_id, created_at)
 		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id, first_name, last_name, email, employee_code, designation, department, manager_id, branch_id, tenant_id, created_at`,
 		id, req.FirstName, req.LastName, req.Email, req.EmployeeCode, req.Designation, req.Department, req.ManagerID, req.BranchID, req.TenantID, time.Now()).Scan(
-		&emp.ID, &emp.FirstName, &emp.LastName, &emp.Email, &emp.EmployeeCode, &emp.Designation, &emp.Department, 
+		&emp.ID, &emp.FirstName, &emp.LastName, &emp.Email, &emp.EmployeeCode, &emp.Designation, &emp.Department,
 		&emp.ManagerID, &emp.BranchID, &emp.TenantID, &emp.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// In a real implementation, we would also save the documents here
-	
+
 	return &emp, nil
 }
 
@@ -509,14 +510,14 @@ func (r *Repository) GetEmployeeDocuments(ctx context.Context, employeeID uuid.U
 
 	// In a real implementation, this would query documents table
 	var docs EmployeeDocuments
-	
+
 	// For now, return mock data
 	docs = EmployeeDocuments{
-		EmployeeID: employeeID,
-		PanNumber:  "PAN123456789",
+		EmployeeID:    employeeID,
+		PanNumber:     "PAN123456789",
 		AadhaarNumber: "123456789012",
-		UanNumber: "UAN9876543210",
-		EsicNumber: "ESIC123456789",
+		UanNumber:     "UAN9876543210",
+		EsicNumber:    "ESIC123456789",
 		Documents: []Document{
 			{
 				Name: "PAN Card",
@@ -528,7 +529,7 @@ func (r *Repository) GetEmployeeDocuments(ctx context.Context, employeeID uuid.U
 			},
 		},
 	}
-	
+
 	return &docs, nil
 }
 
@@ -563,13 +564,13 @@ func (r *Repository) CreateSalaryStructure(ctx context.Context, employeeID uuid.
 			special_allowance, medical_allowance, bonus, overtime_rate, effective_date, created_at`,
 		employeeID, tenantID, salaryReq.PayBasis, salaryReq.Basic, salaryReq.HRA, salaryReq.DA, salaryReq.Conveyance,
 		salaryReq.SpecialAllowance, salaryReq.MedicalAllowance, salaryReq.Bonus, salaryReq.OvertimeRate, salaryReq.EffectiveDate, time.Now()).Scan(
-		&salaryStruct.EmployeeID, &salaryStruct.TenantID, &salaryStruct.PayBasis, &salaryStruct.Basic, &salaryStruct.HRA, 
-		&salaryStruct.DA, &salaryStruct.Conveyance, &salaryStruct.SpecialAllowance, &salaryStruct.MedicalAllowance, 
+		&salaryStruct.EmployeeID, &salaryStruct.TenantID, &salaryStruct.PayBasis, &salaryStruct.Basic, &salaryStruct.HRA,
+		&salaryStruct.DA, &salaryStruct.Conveyance, &salaryStruct.SpecialAllowance, &salaryStruct.MedicalAllowance,
 		&salaryStruct.Bonus, &salaryStruct.OvertimeRate, &salaryStruct.EffectiveDate, &salaryStruct.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &salaryStruct, nil
 }
 
@@ -586,13 +587,13 @@ func (r *Repository) GetSalaryStructure(ctx context.Context, employeeID uuid.UUI
 		`SELECT employee_id, tenant_id, pay_basis, basic, hra, da, conveyance, 
 			special_allowance, medical_allowance, bonus, overtime_rate, effective_date, created_at
 		 FROM org.salary_structures WHERE employee_id = $1 AND tenant_id = $2`, employeeID, tenantID).Scan(
-		&salaryStruct.EmployeeID, &salaryStruct.TenantID, &salaryStruct.PayBasis, &salaryStruct.Basic, &salaryStruct.HRA, 
-		&salaryStruct.DA, &salaryStruct.Conveyance, &salaryStruct.SpecialAllowance, &salaryStruct.MedicalAllowance, 
+		&salaryStruct.EmployeeID, &salaryStruct.TenantID, &salaryStruct.PayBasis, &salaryStruct.Basic, &salaryStruct.HRA,
+		&salaryStruct.DA, &salaryStruct.Conveyance, &salaryStruct.SpecialAllowance, &salaryStruct.MedicalAllowance,
 		&salaryStruct.Bonus, &salaryStruct.OvertimeRate, &salaryStruct.EffectiveDate, &salaryStruct.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &salaryStruct, nil
 }
 
@@ -622,12 +623,12 @@ func (r *Repository) UpdateSalaryStructure(ctx context.Context, employeeID uuid.
 		salaryReq.PayBasis, salaryReq.Basic, salaryReq.HRA, salaryReq.DA, salaryReq.Conveyance,
 		salaryReq.SpecialAllowance, salaryReq.MedicalAllowance, salaryReq.Bonus, salaryReq.OvertimeRate, salaryReq.EffectiveDate,
 		employeeID, tenantID).Scan(
-		&salaryStruct.EmployeeID, &salaryStruct.TenantID, &salaryStruct.PayBasis, &salaryStruct.Basic, &salaryStruct.HRA, 
-		&salaryStruct.DA, &salaryStruct.Conveyance, &salaryStruct.SpecialAllowance, &salaryStruct.MedicalAllowance, 
+		&salaryStruct.EmployeeID, &salaryStruct.TenantID, &salaryStruct.PayBasis, &salaryStruct.Basic, &salaryStruct.HRA,
+		&salaryStruct.DA, &salaryStruct.Conveyance, &salaryStruct.SpecialAllowance, &salaryStruct.MedicalAllowance,
 		&salaryStruct.Bonus, &salaryStruct.OvertimeRate, &salaryStruct.EffectiveDate, &salaryStruct.CreatedAt, &salaryStruct.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &salaryStruct, nil
 }

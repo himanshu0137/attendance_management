@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
+	"uuid"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -73,10 +73,10 @@ func (r *repository) GetLeaveRequest(ctx context.Context, id uuid.UUID) (*LeaveR
 
 func (r *repository) ListLeaveRequests(ctx context.Context, tenantID, status string, page, limit int) ([]*LeaveRequest, int, error) {
 	offset := (page - 1) * limit
-	
+
 	var query string
 	var args []interface{}
-	
+
 	if status != "" {
 		query = `
 			SELECT id, employee_id, tenant_id, start_date, end_date, leave_type, description, status, approved_by, approved_at, created_at, updated_at
@@ -154,7 +154,7 @@ func (r *repository) UpdateLeaveStatus(ctx context.Context, id uuid.UUID, status
 
 func (r *repository) ListMyLeaveRequests(ctx context.Context, employeeID string, page, limit int) ([]*LeaveRequest, int, error) {
 	offset := (page - 1) * limit
-	
+
 	query := `
 		SELECT id, employee_id, tenant_id, start_date, end_date, leave_type, description, status, approved_by, approved_at, created_at, updated_at
 		FROM leave_requests

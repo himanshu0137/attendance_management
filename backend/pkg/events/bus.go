@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 // ID generates a new UUID for an event.
@@ -84,7 +84,7 @@ func (b *InMemoryBus) Subscribe(topic string, handler HandlerFunc) (unsubscribe 
 	return func() {
 		b.mu.Lock()
 		defer b.mu.Unlock()
-		
+
 		handlers := b.handlers[topic]
 		for i, h := range handlers {
 			if h == handler {

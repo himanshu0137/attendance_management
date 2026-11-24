@@ -5,7 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
+	"uuid"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -88,7 +89,7 @@ func TestApproveLeaveRequest(t *testing.T) {
 	service := NewService(repo)
 
 	ctx := context.Background()
-	
+
 	// First create a leave request
 	req := CreateLeaveRequest{
 		EmployeeID:  "emp-123",
@@ -120,7 +121,7 @@ func TestRejectLeaveRequest(t *testing.T) {
 	service := NewService(repo)
 
 	ctx := context.Background()
-	
+
 	// First create a leave request
 	req := CreateLeaveRequest{
 		EmployeeID:  "emp-123",
@@ -152,7 +153,7 @@ func TestListMyLeaveRequests(t *testing.T) {
 	service := NewService(repo)
 
 	ctx := context.Background()
-	
+
 	// Create multiple leave requests for same employee
 	req1 := CreateLeaveRequest{
 		EmployeeID:  "emp-123",
@@ -184,7 +185,7 @@ func TestListMyLeaveRequests(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 2, total)
 	assert.Len(t, leaves, 2)
-	
+
 	// Verify both are returned
 	foundIDs := make(map[uuid.UUID]bool)
 	for _, leave := range leaves {

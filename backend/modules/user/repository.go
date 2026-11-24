@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
+	"uuid"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -16,7 +16,7 @@ type Repository interface {
 	UpdateUser(ctx context.Context, id uuid.UUID, req UserUpdateRequest) error
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 	ListUsers(ctx context.Context, tenantID uuid.UUID, page, limit int) ([]*User, int, error)
-	
+
 	CreateRole(ctx context.Context, role Role) error
 	GetRole(ctx context.Context, id uuid.UUID) (*Role, error)
 	AssignRole(ctx context.Context, assignment UserRoleAssignment) error
@@ -69,7 +69,7 @@ func (r *repository) GetUser(ctx context.Context, id uuid.UUID) (*User, error) {
 		}
 		return nil, err
 	}
-	
+
 	return &user, nil
 }
 
@@ -96,7 +96,7 @@ func (r *repository) DeleteUser(ctx context.Context, id uuid.UUID) error {
 
 func (r *repository) ListUsers(ctx context.Context, tenantID uuid.UUID, page, limit int) ([]*User, int, error) {
 	offset := (page - 1) * limit
-	
+
 	query := `
 		SELECT id, tenant_id, email, password_hash, first_name, last_name, is_active, created_at, updated_at
 		FROM users
@@ -178,7 +178,7 @@ func (r *repository) GetRole(ctx context.Context, id uuid.UUID) (*Role, error) {
 		}
 		return nil, err
 	}
-	
+
 	return &role, nil
 }
 
@@ -241,6 +241,6 @@ func (r *repository) CheckPermission(ctx context.Context, userID uuid.UUID, perm
 	if err != nil {
 		return false, err
 	}
-	
+
 	return exists, nil
 }

@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
+	"uuid"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -17,55 +18,6 @@ func NewService(repo Repository) *Service {
 	return &Service{
 		repo: repo,
 	}
-}
-
-// User represents a user in the system
-type User struct {
-	ID            uuid.UUID `json:"id"`
-	TenantID      uuid.UUID `json:"tenant_id"`
-	Email         string    `json:"email"`
-	PasswordHash  string    `json:"-"`
-	FirstName     string    `json:"first_name"`
-	LastName      string    `json:"last_name"`
-	IsActive      bool      `json:"is_active"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
-}
-
-// UserCreateRequest represents a request to create a new user
-type UserCreateRequest struct {
-	TenantID      uuid.UUID `json:"tenant_id"`
-	Email         string    `json:"email"`
-	Password      string    `json:"password"`
-	FirstName     string    `json:"first_name"`
-	LastName      string    `json:"last_name"`
-}
-
-// UserUpdateRequest represents a request to update a user
-type UserUpdateRequest struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	IsActive  *bool  `json:"is_active,omitempty"`
-}
-
-// Role represents a role in the system
-type Role struct {
-	ID          uuid.UUID `json:"id"`
-	TenantID    uuid.UUID `json:"tenant_id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	Permissions []string  `json:"permissions"`
-	CreatedAt   time.Time `json:"created_at"`
-}
-
-// UserRoleAssignment represents the assignment of a role to a user
-type UserRoleAssignment struct {
-	ID          uuid.UUID `json:"id"`
-	UserID      uuid.UUID `json:"user_id"`
-	RoleID      uuid.UUID `json:"role_id"`
-	TenantID    uuid.UUID `json:"tenant_id"`
-	AssignedAt  time.Time `json:"assigned_at"`
-	CreatedAt   time.Time `json:"created_at"`
 }
 
 // CreateUserService creates a new user

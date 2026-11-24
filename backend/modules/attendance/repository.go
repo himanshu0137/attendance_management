@@ -4,8 +4,9 @@ import (
 	"context"
 	"time"
 
+	"uuid"
+
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/google/uuid"
 
 	"hunrx.com/attendance_management/pkg/db"
 )
@@ -140,7 +141,7 @@ func (r *Repository) CreateShift(ctx context.Context, tenantID string, shift Shi
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &createdShift, nil
 }
 
@@ -163,7 +164,7 @@ func (r *Repository) GetShift(ctx context.Context, tenantID string, shiftID stri
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &shift, nil
 }
 
@@ -176,7 +177,7 @@ func (r *Repository) ListShifts(ctx context.Context, tenantID string, page, limi
 	defer release()
 
 	offset := (page - 1) * limit
-	
+
 	rows, err := conn.Query(ctx,
 		`SELECT id, tenant_id, name, description, start_time, end_time, is_active, created_at, updated_at
 		 FROM attendance.shifts WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
@@ -185,7 +186,7 @@ func (r *Repository) ListShifts(ctx context.Context, tenantID string, page, limi
 		return nil, 0, err
 	}
 	defer rows.Close()
-	
+
 	var shifts []*Shift
 	for rows.Next() {
 		var shift Shift
@@ -197,7 +198,7 @@ func (r *Repository) ListShifts(ctx context.Context, tenantID string, page, limi
 		}
 		shifts = append(shifts, &shift)
 	}
-	
+
 	// Get total count
 	var total int
 	err = conn.QueryRow(ctx,
@@ -205,7 +206,7 @@ func (r *Repository) ListShifts(ctx context.Context, tenantID string, page, limi
 	if err != nil {
 		return nil, 0, err
 	}
-	
+
 	return shifts, total, nil
 }
 
@@ -234,7 +235,7 @@ func (r *Repository) UpdateShift(ctx context.Context, tenantID string, shiftID s
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &updatedShift, nil
 }
 
@@ -271,7 +272,7 @@ func (r *Repository) CreateAttendanceRule(ctx context.Context, tenantID string, 
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &createdRule, nil
 }
 
@@ -294,7 +295,7 @@ func (r *Repository) GetAttendanceRule(ctx context.Context, tenantID string, rul
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &rule, nil
 }
 
@@ -307,7 +308,7 @@ func (r *Repository) ListAttendanceRules(ctx context.Context, tenantID string, p
 	defer release()
 
 	offset := (page - 1) * limit
-	
+
 	rows, err := conn.Query(ctx,
 		`SELECT id, tenant_id, rule_name, description, rule_type, condition, action, is_active, created_at, updated_at
 		 FROM attendance.attendance_rules WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
@@ -316,7 +317,7 @@ func (r *Repository) ListAttendanceRules(ctx context.Context, tenantID string, p
 		return nil, 0, err
 	}
 	defer rows.Close()
-	
+
 	var rules []*AttendanceRule
 	for rows.Next() {
 		var rule AttendanceRule
@@ -328,7 +329,7 @@ func (r *Repository) ListAttendanceRules(ctx context.Context, tenantID string, p
 		}
 		rules = append(rules, &rule)
 	}
-	
+
 	// Get total count
 	var total int
 	err = conn.QueryRow(ctx,
@@ -336,7 +337,7 @@ func (r *Repository) ListAttendanceRules(ctx context.Context, tenantID string, p
 	if err != nil {
 		return nil, 0, err
 	}
-	
+
 	return rules, total, nil
 }
 
@@ -366,7 +367,7 @@ func (r *Repository) UpdateAttendanceRule(ctx context.Context, tenantID string, 
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &updatedRule, nil
 }
 
